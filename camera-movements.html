@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camera Movements — CINEMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #0a0c10;
+    --bg-card:    #141820;
+    --accent:     #e8c84a;
+    --accent2:    #4af0c8;
+    --text-primary: #f2f4fa;
+    --text-secondary: #9aa0b2;
+    --text-muted: #5a6070;
+    --border:     #1e2535;
+    --border-hover: #2e3a55;
+    --tag-dolly:  #4a9eff;
+    --tag-zoom:   #ff6b4a;
+    --tag-drone:  #4af0c8;
+    --tag-pan:    #c87aff;
+    --tag-other:  #e8c84a;
+    --card-radius: 12px;
+    --radius: 10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: .4;
+  }
+
+  /* ─── NAV BACK ─── */
+  .topbar {
+    position: relative;
+    z-index: 10;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .back-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color .2s;
+  }
+
+  .back-btn:hover { color: var(--accent); }
+  .back-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .topbar-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+  }
+
+  .topbar-title span { color: var(--accent); }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    z-index: 5;
+    padding: 50px 32px 36px;
+  }
+
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--accent2);
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(42px, 6vw, 80px);
+    line-height: .95;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #eef0f6 0%, #8a90a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent) 0%, #f5a623 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  /* ─── FILTERS ─── */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+  .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--bg-deep);
+    background: var(--accent);
+    font-weight: 600;
+  }
+
+  .filter-btn[data-filter="Dolly"].active  { background: var(--tag-dolly); border-color: var(--tag-dolly); }
+  .filter-btn[data-filter="Zoom"].active   { background: var(--tag-zoom);  border-color: var(--tag-zoom);  }
+  .filter-btn[data-filter="Drone"].active  { background: var(--tag-drone); border-color: var(--tag-drone); }
+  .filter-btn[data-filter="Pan"].active    { background: var(--tag-pan);   border-color: var(--tag-pan);   }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .stat-count span { color: var(--accent); font-weight: 600; }
+  .stat-divider { width: 1px; height: 16px; background: var(--border); }
+
+  .copy-all-btn {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .copy-all-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ─── INSTRUCTION ─── */
+  .instruction-banner {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 20px;
+  }
+
+  .instruction-inner {
+    background: linear-gradient(135deg, rgba(74,240,200,.07) 0%, rgba(74,240,200,.02) 100%);
+    border: 1px solid rgba(74,240,200,.2);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .instruction-icon {
+    width: 30px; height: 30px;
+    background: rgba(74,240,200,.15);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .instruction-icon svg { width: 15px; height: 15px; fill: var(--accent2); }
+  .instruction-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .instruction-text strong { color: var(--accent2); }
+  .instruction-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(74,240,200,.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+
+  /* ─── GRID ─── */
+  main {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 80px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp .4s ease both;
+  }
+
+  .card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+
+  .card.hidden { display: none; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── VIDEO WRAPPER ─── */
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #080a0e;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .video-wrapper video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    -webkit-media-controls: none;
+  }
+
+  .video-wrapper video::-webkit-media-controls,
+  .video-wrapper video::-webkit-media-controls-enclosure,
+  .video-wrapper video::-webkit-media-controls-overlay-play-button,
+  .video-wrapper video::-internal-media-controls-button-panel,
+  .video-wrapper video::-internal-media-controls-download-button {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .video-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: transparent;
+    pointer-events: auto;
+  }
+
+  .video-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #0d1018 0%, #111520 100%);
+  }
+
+  .ph-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px dashed var(--border-hover);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .ph-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .ph-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0 12px;
+  }
+
+  .ph-filename {
+    font-size: 9px;
+    color: #2e3a4a;
+    padding: 4px 10px;
+    border: 1px solid #1a2535;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .video-tag {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #0a0c10;
+    font-weight: 700;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .video-num {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.3);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .tag-dolly  { background: var(--tag-dolly); }
+  .tag-zoom   { background: var(--tag-zoom);  }
+  .tag-drone  { background: var(--tag-drone); }
+  .tag-pan    { background: var(--tag-pan);   }
+  .tag-other  { background: var(--tag-other); }
+
+  /* ─── CARD BODY ─── */
+  .card-body {
+    padding: 14px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+
+  .card-prompt {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .card-footer { margin-top: 10px; }
+
+  .copy-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .copy-btn svg { width: 11px; height: 11px; fill: currentColor; }
+  .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .copy-btn.copied { border-color: #4aff88; color: #4aff88; }
+
+  .use-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: .5px;
+    padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: rgba(232,200,74,0.10);
+    color: var(--accent);
+    cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; gap: 5px; margin-left: 6px;
+  }
+  .use-btn:hover { background: rgba(232,200,74,0.28); }
+  .use-btn.sent  { border-color: #4aff88; color: #4aff88; background: rgba(74,255,136,0.10); }
+
+  /* top banner shown when CinePrompt is detected */
+  .cineprompt-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: var(--accent); color: #0a0c10;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 8px 16px;
+  }
+  .cineprompt-banner .banner-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #0a0c10;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    display: none;
+  }
+
+  /* ─── LIGHTBOX ─── */
+  .lightbox {
+    position: fixed; inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+
+  .lightbox.open { opacity: 1; pointer-events: all; }
+
+  .lightbox-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(5,7,12,.92);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+  }
+
+  .lightbox-panel {
+    position: relative;
+    z-index: 2;
+    width: min(88vw, 1100px);
+    background: var(--bg-card);
+    border: 1px solid var(--border-hover);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.8);
+    transform: scale(.94) translateY(16px);
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+
+  .lightbox.open .lightbox-panel { transform: scale(1) translateY(0); }
+
+  .lightbox-video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+  }
+
+  .lightbox-video-wrap video {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    z-index: 10;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(10,12,16,.75);
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .2s, border-color .2s, transform .15s;
+    backdrop-filter: blur(4px);
+  }
+
+  .lightbox-close:hover { background: rgba(232,200,74,.15); border-color: var(--accent); transform: scale(1.1); }
+  .lightbox-close svg { width: 18px; height: 18px; fill: currentColor; pointer-events: none; }
+
+  .lightbox-info {
+    padding: 18px 24px 22px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .lightbox-info-left { flex: 1; }
+
+  .lightbox-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 26px;
+    letter-spacing: 1.5px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .lightbox-prompt {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .lightbox-copy {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  .lightbox-copy svg { width: 12px; height: 12px; fill: currentColor; }
+  .lightbox-copy:hover { border-color: var(--accent2); color: var(--accent2); }
+  .lightbox-copy.copied { border-color: #4aff88; color: #4aff88; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 780px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px)  {
+    .grid { grid-template-columns: 1fr; }
+    .hero, main, .stats-bar, .instruction-banner { padding-left: 12px; padding-right: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    CINEMA
+  </a>
+  <span class="topbar-title"><span>Camera</span> Movements</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Référence ultime</div>
+  <h1><span>46</span> Camera<br>Movements</h1>
+  <p class="hero-desc">Prompts précis pour vos vidéos IA. Filtrez par catégorie, copiez le prompt, placez vos vidéos locales dans le dossier <strong>videos/</strong>.</p>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="All">All · 46</button>
+    <button class="filter-btn" data-filter="Dolly">Dolly / Track</button>
+    <button class="filter-btn" data-filter="Zoom">Zoom / Lens</button>
+    <button class="filter-btn" data-filter="Drone">Drone / Crane</button>
+    <button class="filter-btn" data-filter="Pan">Pan / Tilt</button>
+    <button class="filter-btn" data-filter="Other">Other</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <span class="stat-count">Affichage : <span id="visible-count">46</span> / 46 mouvements</span>
+  <div class="stat-divider"></div>
+  <span class="stat-count">Vidéos locales : <span id="video-count">0</span> actives</span>
+  <button class="copy-all-btn" id="copy-all">⊕ Copier tous les prompts visibles</button>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="instruction-banner">
+  <div class="instruction-inner">
+    <div class="instruction-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 9h-2V7h2m0 10h-2v-6h2m-1-9A10 10 0 002 12a10 10 0 0010 10 10 10 0 0010-10A10 10 0 0012 2z"/></svg>
+    </div>
+    <div class="instruction-text">
+      <strong>Vidéos locales :</strong> Dossier <code>videos/</code> au même niveau que ce fichier HTML.
+      Nommez chaque vidéo par son slug (ex : <code>videos/slow-dolly-in.mp4</code>). Formats : <code>.mp4</code>, <code>.webm</code>, <code>.mov</code>.
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+  <div class="lightbox-panel">
+    <div class="lightbox-video-wrap">
+      <video id="lightbox-video" loop muted playsinline autoplay
+             disableremoteplayback controlslist="nodownload noremoteplayback"></video>
+      <button class="lightbox-close" id="lightbox-close" title="Fermer">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-info">
+      <div class="lightbox-info-left">
+        <div class="lightbox-title" id="lightbox-title"></div>
+        <div class="lightbox-prompt" id="lightbox-prompt"></div>
+      </div>
+      <button class="lightbox-copy" id="lightbox-copy">
+        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        Copier prompt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<main>
+  <div class="grid" id="grid">
+    <div class="no-results" id="no-results">Aucun résultat pour ce filtre.</div>
+  </div>
+</main>
+
+<script>
+const movements = [
+  { id: 1,  slug: "slow-dolly-in",        title: "Slow Dolly In",                        tag: "Dolly",
+    prompt: "Slow dolly in, camera moves slowly forward toward the subject." },
+  { id: 2,  slug: "slow-dolly-out",       title: "Slow Dolly Out",                       tag: "Dolly",
+    prompt: "Slow dolly out, camera moves slowly backwards away from the subject." },
+  { id: 3,  slug: "fast-dolly-in",        title: "Fast Dolly In / Out",                        tag: "Dolly",
+    prompt: "Fast dolly in, camera moves rapidly forward toward the subject, urgent motion." },
+  { id: 4,  slug: "reveal-from-behind",   title: "Reveal from Behind",                   tag: "Dolly",
+    prompt: "Wipe movement, camera slides laterally from behind foreground object to reveal the scene." },
+  { id: 5,  slug: "through-shot",         title: "Through Shot",                         tag: "Dolly",
+    prompt: "Fly through, camera moves through an opening into the scene." },
+  { id: 6,  slug: "leading-shot",         title: "Leading Shot",                         tag: "Dolly",
+    prompt: "Leading shot, camera moves backward matching the subject's speed." },
+  { id: 7,  slug: "following-shot",       title: "Following Shot",                       tag: "Dolly",
+    prompt: "Following shot, camera follows behind the subject matching speed." },
+  { id: 8,  slug: "side-tracking",        title: "Side Tracking (Parallel)",             tag: "Dolly",
+    prompt: "Side tracking, camera trucks alongside the subject." },
+  { id: 9,  slug: "camera-truck-left",    title: "Camera Truck Right / Left",                    tag: "Dolly",
+    prompt: "Truck left, camera moves sideways on a track to the left." },
+  { id: 49, slug: "forward-moving-camera", title: "Forward Moving Camera (slow / fast / ...)",   tag: "Dolly",
+    prompt: "Forward moving camera (steady / smooth), camera moves at desired speed, stable image, little or no blurring." },
+  { id: 11, slug: "vertigo-effect",       title: "Vertigo Effect (Zolly)",               tag: "Zoom",
+    prompt: "Vertigo effect, dolly zoom, camera moves backward while zooming in, background expands." },
+  { id: 12, slug: "extreme-macro-zoom",   title: "Extreme Macro Zoom / extreme close-up",                   tag: "Zoom",
+    prompt: "Extreme macro zoom, zoom transition from subject to micro details of surface." },
+  { id: 13, slug: "cosmic-hyper-zoom",    title: "(Cosmic) Hyper Zoom",                    tag: "Zoom",
+    prompt: "Cosmic hyper zoom, fast zoom transition from extreme wide view down to macro level." },
+  { id: 14, slug: "smooth-zoom-in",       title: "Smooth Optical Zoom In",               tag: "Zoom",
+    prompt: "Smooth optical zoom in, lens magnifies subject, camera stays stationary." },
+  { id: 15, slug: "smooth-zoom-out",      title: "Smooth Optical Zoom Out",              tag: "Zoom",
+    prompt: "Smooth optical zoom out, lens widens, background becomes blurry." },
+  { id: 16, slug: "snap-zoom",            title: "Snap Zoom (Crash Zoom)",               tag: "Zoom",
+    prompt: "Snap zoom, crash zoom, rapid zoom directly into something." },
+  { id: 17, slug: "fisheye-lens",         title: "Fisheye or Peephole Lens",             tag: "Zoom",
+    prompt: "Fisheye lens, extreme wide-angle distortion, circular frame." },
+  { id: 18, slug: "reveal-from-blur",     title: "Reveal from Blur",                     tag: "Zoom",
+    prompt: "Rack focus, start completely out of focus, slowly pull focus until sharp." },
+  { id: 19, slug: "rack-focus",           title: "Rack Focus",                           tag: "Zoom",
+    prompt: "Rack focus, focus shifts from the foreground object to the background subject." },
+  { id: 47, slug: "macro-zoom",           title: "Macro Zoom",                           tag: "Zoom",
+    prompt: "Macro zoom, zoom in to reveal fine details of a subject while retaining slight context around it." },
+  { id: 20, slug: "drone-fly-over",       title: "Drone Fly Over",                       tag: "Drone",
+    prompt: "Drone fly over, high altitude flight moving forward over something ..." },
+  { id: 21, slug: "epic-drone-reveal",    title: "Epic Drone Reveal",                    tag: "Drone",
+    prompt: "Epic drone reveal, rising and tilting down to reveal the scene." },
+  { id: 22, slug: "drone-orbit",          title: "Large Scale Drone Orbit",              tag: "Drone",
+    prompt: "Large scale drone orbit, massive sweeping circle around the landscape." },
+  { id: 23, slug: "top-down",             title: "Top Down (God's Eye View)",            tag: "Drone",
+    prompt: "Top down shot, camera pointing straight down, slow twist." },
+  { id: 24, slug: "fpv-drone",            title: "FPV Drone Aggressive",                 tag: "Drone",
+    prompt: "FPV drone dive, aggressive diving motion down a vertical structure." },
+  { id: 25, slug: "crane-up",             title: "Crane Up (High Angle Reveal)",         tag: "Drone",
+    prompt: "Crane up, camera lifts high into the air." },
+  { id: 26, slug: "crane-down",           title: "Crane Down (Landing)",                 tag: "Drone",
+    prompt: "Crane down, camera descends slowly to the subject." },
+  { id: 27, slug: "pedestal-up",          title: "Pedestal Up",                          tag: "Drone",
+    prompt: "Pedestal up, camera rises vertically straight up from bottom to top." },
+  { id: 28, slug: "pedestal-down",        title: "Pedestal Down",                        tag: "Drone",
+    prompt: "Pedestal down, camera lowers vertically straight down." },
+  { id: 29, slug: "worms-eye",            title: "Worm's Eye Tracking",                  tag: "Drone",
+    prompt: "Worm's eye view, low angle tracking, camera moves along the ground looking up." },
+  { id: 30, slug: "hyperlapse",           title: "Hyperlapse (Moving Time-Lapse)",       tag: "Drone",
+    prompt: "Hyperlapse, camera moves forward rapidly, time accelerated, fast motion, light trails." },
+  { id: 31, slug: "tilt-up",             title: "Tilt Up",                              tag: "Pan",
+    prompt: "Tilt up, camera pans vertically up from bottom to top." },
+  { id: 32, slug: "tilt-down",           title: "Tilt Down",                            tag: "Pan",
+    prompt: "Tilt down, camera pans vertically down from top to bottom." },
+  { id: 33, slug: "whip-pan",            title: "Whip Pan (rapid - left / right)",                             tag: "Pan",
+    prompt: "Whip pan, rapid horizontal right pan creating strong motion blur, often used as a dynamic transition. / Whip pan, panoramique horizontal très rapide produisant un fort flou de mouvement, souvent utilisé comme transition dynamique." },
+  { id: 48, slug: "whip-pan-horizontal", title: "Whip Pan (slow - letf / right)",                                     tag: "Pan",
+    prompt: "Whip pan, slow horizontal pan creating strong motion blur, often used as a transition." },
+  { id: 34, slug: "dutch-angle",         title: "Dutch Angle (Roll)",                   tag: "Pan",
+    prompt: "Dutch angle, camera roll, tilted sideways on Z-axis. ex : The camera rotates counterclockwise on its axis, rotating 30°" },
+  { id: 35, slug: "pov-walk",            title: "POV Walk (First Person)",              tag: "Pan",
+    prompt: "POV walk, first person camera moving forward with bobbing motion." },
+  { id: 36, slug: "handheld",            title: "Handheld Documentary Style",           tag: "Pan",
+    prompt: "Handheld camera, shaky motion, natural movement, documentary style." },
+  { id: 37, slug: "orbit-180",           title: "180-degrees-arc / orbit-180 degrees", tag: "Other",
+    prompt: "180-degrees-arc / orbit-180 degrees, camera moves in a half-circle around the subject." },
+  { id: 38, slug: "fast-360-orbit",      title: "fast 360-degrees-arc / fast orbit-360 degrees / fast 360 shot",               tag: "Other",
+    prompt: "Fast 360 orbit, camera spins rapidly 360 degrees around the subject." },
+  { id: 41, slug: "spinning-shot",       title: "Spinning Shot",                       tag: "Other",
+    prompt: "Spinning shot, camera rotates 360 degrees on its axis." },
+  { id: 42, slug: "slow-cinematic-arc",  title: "Slow Cinematic Arc",                  tag: "Other",
+    prompt: "Slow cinematic arc, camera moves in a wide curve to reveal side profile." },
+  { id: 43, slug: "ots-shot",            title: "Over the Shoulder (OTS)",             tag: "Other",
+    prompt: "Over the shoulder shot, camera mounted behind subject A framing subject B." },
+  { id: 44, slug: "barrel-roll",         title: "Barrel Roll (Vortex)",                tag: "Other",
+    prompt: "Barrel roll, camera spins 360 degrees clockwise while moving forward, disorienting." },
+  { id: 45, slug: "bullet-time",         title: "Bullet Time (Frozen Moment)",         tag: "Other",
+    prompt: "Bullet time, frozen moment, ultra slow motion, camera orbit right." },
+  { id: 46, slug: "static-shot",         title: "Static Shot",                         tag: "Other",
+    prompt: "Static shot, the camera remains stationary." },
+];
+
+const tagConfig = {
+  Dolly: { cls: "tag-dolly", label: "DOLLY" },
+  Zoom:  { cls: "tag-zoom",  label: "ZOOM"  },
+  Drone: { cls: "tag-drone", label: "DRONE" },
+  Pan:   { cls: "tag-pan",   label: "PAN"   },
+  Other: { cls: "tag-other", label: "OTHER" },
+};
+
+const grid       = document.getElementById('grid');
+const noResults  = document.getElementById('no-results');
+const videoCountEl = document.getElementById('video-count');
+let videoLoadedCount = 0;
+
+function updateVideoCount() { videoLoadedCount++; videoCountEl.textContent = videoLoadedCount; }
+
+movements.forEach((m, idx) => {
+  const tc = tagConfig[m.tag];
+  const videoFile = `videos/${m.slug}.mp4`;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.tag = m.tag;
+  card.style.animationDelay = (idx * 0.025) + 's';
+  card.innerHTML = `
+    <div class="video-wrapper">
+      <video src="${videoFile}" autoplay loop muted playsinline preload="metadata"
+             disableremoteplayback controlslist="nodownload noremoteplayback"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+             oncanplay="this.play();updateVideoCount();"></video>
+      <div class="video-placeholder" style="display:none">
+        <div class="ph-icon"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg></div>
+        <div class="ph-text">Vidéo introuvable</div>
+        <div class="ph-filename">${videoFile}</div>
+      </div>
+      <div class="video-overlay"></div>
+      <div class="video-tag ${tc.cls}">${tc.label}</div>
+      <div class="video-num">#${String(m.id).padStart(2,'0')}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${m.title}</div>
+      <div class="card-prompt">${m.prompt}</div>
+      <div class="card-footer">
+        <button class="copy-btn">
+          <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          Copier prompt
+        </button>
+        <button class="use-btn" data-title="${m.title}" data-prompt="${m.prompt.replace(/"/g,'&quot;')}">
+          ✦ Utiliser
+        </button>
+      </div>
+    </div>`;
+
+  card.querySelector('.video-overlay').style.cursor = 'zoom-in';
+  card.querySelector('.video-overlay').addEventListener('click', () => openLightbox(videoFile, m.title, m.prompt));
+
+  card.querySelector('.copy-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    copyText(m.prompt, e.currentTarget);
+  });
+
+  card.querySelector('.use-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    const channel = new BroadcastChannel('cineprompt');
+    channel.postMessage({
+      type: 'CINEPROMPT_USE',
+      category: 'camera',
+      title: m.title,
+      prompt: m.prompt
+    });
+    channel.close();
+    // Close this tab after short delay so message has time to send
+    setTimeout(() => window.close(), 300);
+  });
+
+  grid.appendChild(card);
+});
+
+window.addEventListener('load', () => {
+  document.querySelectorAll('.video-wrapper video').forEach(v => v.play().catch(()=>{}));
+});
+
+// Filter
+const filterBtns   = document.querySelectorAll('.filter-btn');
+const visibleCount  = document.getElementById('visible-count');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    let vis = 0;
+    document.querySelectorAll('.card').forEach(c => {
+      const show = filter === 'All' || c.dataset.tag === filter;
+      c.classList.toggle('hidden', !show);
+      if (show) vis++;
+    });
+    visibleCount.textContent = vis;
+    noResults.style.display = vis === 0 ? 'block' : 'none';
+  });
+});
+
+// Copy all
+document.getElementById('copy-all').addEventListener('click', () => {
+  const f = document.querySelector('.filter-btn.active').dataset.filter;
+  const text = movements.filter(m => f === 'All' || m.tag === f)
+    .map((m,i) => `${i+1}. ${m.title}\n   ${m.prompt}`).join('\n\n');
+  const btn = document.getElementById('copy-all');
+  const orig = btn.textContent;
+  copyRaw(text);
+  btn.textContent = '✓ Copiés !';
+  setTimeout(() => { btn.textContent = orig; }, 2500);
+});
+
+// Helpers
+function copyRaw(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+
+function copyText(text, btn) {
+  copyRaw(text);
+  btn.textContent = '✓ Copié !';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+    btn.classList.remove('copied');
+  }, 2000);
+}
+
+// Lightbox
+const lightbox        = document.getElementById('lightbox');
+const lightboxVideo   = document.getElementById('lightbox-video');
+const lightboxTitle   = document.getElementById('lightbox-title');
+const lightboxPromptEl= document.getElementById('lightbox-prompt');
+const lightboxCopyBtn = document.getElementById('lightbox-copy');
+let currentPrompt = '';
+
+function openLightbox(src, title, prompt) {
+  lightboxTitle.textContent   = title;
+  lightboxPromptEl.textContent = prompt;
+  currentPrompt = prompt;
+  lightboxVideo.src = src;
+  lightboxVideo.play().catch(()=>{});
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lightboxCopyBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+  lightboxCopyBtn.classList.remove('copied');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { lightboxVideo.pause(); lightboxVideo.src = ''; }, 300);
+}
+
+document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+document.getElementById('lightbox-backdrop').addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+lightboxCopyBtn.addEventListener('click', () => {
+  copyRaw(currentPrompt);
+  lightboxCopyBtn.innerHTML = '✓ Copié !';
+  lightboxCopyBtn.classList.add('copied');
+  setTimeout(() => {
+    lightboxCopyBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+    lightboxCopyBtn.classList.remove('copied');
+  }, 2000);
+});
+
+// ── CINEPROMPT INTEGRATION via BroadcastChannel ──
+// Show banner + use-buttons when CinePrompt is open in another tab
+const cpChannel = new BroadcastChannel('cineprompt');
+
+function showCinePromptMode() {
+  if (document.getElementById('cp-banner')) return; // already shown
+  const banner = document.createElement('div');
+  banner.id = 'cp-banner';
+  banner.className = 'cineprompt-banner';
+  banner.innerHTML = '<div class="banner-dot"></div> CinePrompt connecté — clique sur "Utiliser dans CinePrompt" pour injecter un mouvement';
+  document.body.prepend(banner);
+  document.body.style.paddingTop = '40px';
+  document.querySelectorAll('.use-btn').forEach(b => b.style.display = 'flex');
+}
+
+// Listen for ping from CinePrompt when it opens this page
+cpChannel.addEventListener('message', e => {
+  if (e.data && e.data.type === 'CINEPROMPT_PING') showCinePromptMode();
+});
+
+// Also: if this page was opened by CinePrompt it sends a ping — reply
+window.addEventListener('load', () => {
+  // Send a ready signal so CinePrompt knows we're open
+  cpChannel.postMessage({ type: 'CAMERA_READY' });
+});
+
+</script>
+</body>
+</html>
