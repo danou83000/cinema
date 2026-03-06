@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shots &amp; Angles — CINEMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #0a0c10;
+    --bg-card:    #141820;
+    --accent:     #ff9f4a;
+    --accent2:    #b06aff;
+    --text-primary: #f2f4fa;
+    --text-secondary: #9aa0b2;
+    --text-muted: #5a6070;
+    --border:     #1e2535;
+    --border-hover: #2e3a55;
+    --tag-shots:  #ff9f4a;
+    --tag-angles: #b06aff;
+    --card-radius: 12px;
+    --radius: 10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: .4;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    position: relative;
+    z-index: 10;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .back-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color .2s;
+  }
+
+  .back-btn:hover { color: var(--accent); }
+  .back-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .topbar-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+  }
+
+  .topbar-title span { color: var(--accent); }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    z-index: 5;
+    padding: 50px 32px 36px;
+  }
+
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--accent2);
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(42px, 6vw, 80px);
+    line-height: .95;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #eef0f6 0%, #8a90a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent) 0%, #ffcc44 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  /* ─── FILTERS ─── */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+  .filter-btn.active {
+    border-color: var(--accent);
+    color: #0a0c10;
+    background: var(--accent);
+    font-weight: 600;
+  }
+
+  .filter-btn[data-filter="Shots"].active  { background: var(--tag-shots);  border-color: var(--tag-shots);  }
+  .filter-btn[data-filter="Angles"].active { background: var(--tag-angles); border-color: var(--tag-angles); }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .stat-count span { color: var(--accent); font-weight: 600; }
+  .stat-divider { width: 1px; height: 16px; background: var(--border); }
+
+  .copy-all-btn {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .copy-all-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ─── INSTRUCTION ─── */
+  .instruction-banner {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 20px;
+  }
+
+  .instruction-inner {
+    background: linear-gradient(135deg, rgba(176,106,255,.07) 0%, rgba(176,106,255,.02) 100%);
+    border: 1px solid rgba(176,106,255,.2);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .instruction-icon {
+    width: 30px; height: 30px;
+    background: rgba(176,106,255,.15);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .instruction-icon svg { width: 15px; height: 15px; fill: var(--accent2); }
+  .instruction-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .instruction-text strong { color: var(--accent2); }
+  .instruction-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(176,106,255,.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+
+  /* ─── GRID ─── */
+  main {
+    position: relative;
+    z-index: 5;
+    padding: 0 32px 80px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp .4s ease both;
+  }
+
+  .card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+
+  .card.hidden { display: none; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── IMAGE WRAPPER ─── */
+  .img-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #080a0e;
+    overflow: hidden;
+    flex-shrink: 0;
+    cursor: zoom-in;
+  }
+
+  .img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s ease;
+  }
+
+  .img-wrapper:hover img { transform: scale(1.04); }
+
+  .img-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #0d1018 0%, #111520 100%);
+  }
+
+  .ph-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px dashed var(--border-hover);
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .ph-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .ph-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .ph-filename {
+    font-size: 9px;
+    color: #2e3a4a;
+    padding: 4px 10px;
+    border: 1px solid #1a2535;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .img-tag {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #0a0c10;
+    font-weight: 700;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .img-num {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.3);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .tag-shots  { background: var(--tag-shots);  }
+  .tag-angles { background: var(--tag-angles); }
+
+  /* ─── CARD BODY ─── */
+  .card-body {
+    padding: 14px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+
+  .card-prompt {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .card-footer { margin-top: 10px; }
+
+  .copy-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .copy-btn svg { width: 11px; height: 11px; fill: currentColor; }
+  .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .copy-btn.copied { border-color: #4aff88; color: #4aff88; }
+
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    display: none;
+  }
+
+  /* ─── LIGHTBOX IMAGE ─── */
+  .lightbox {
+    position: fixed; inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+
+  .lightbox.open { opacity: 1; pointer-events: all; }
+
+  .lightbox-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(5,7,12,.93);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+  }
+
+  .lightbox-panel {
+    position: relative;
+    z-index: 2;
+    width: min(88vw, 1100px);
+    background: var(--bg-card);
+    border: 1px solid var(--border-hover);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.8);
+    transform: scale(.94) translateY(16px);
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+
+  .lightbox.open .lightbox-panel { transform: scale(1) translateY(0); }
+
+  .lightbox-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+  }
+
+  .lightbox-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    z-index: 10;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(10,12,16,.75);
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .2s, border-color .2s, transform .15s;
+    backdrop-filter: blur(4px);
+  }
+
+  .lightbox-close:hover { background: rgba(255,159,74,.15); border-color: var(--accent); transform: scale(1.1); }
+  .lightbox-close svg { width: 18px; height: 18px; fill: currentColor; pointer-events: none; }
+
+  .lightbox-info {
+    padding: 18px 24px 22px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .lightbox-info-left { flex: 1; }
+
+  .lightbox-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 26px;
+    letter-spacing: 1.5px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .lightbox-prompt {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .lightbox-copy {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  .lightbox-copy svg { width: 12px; height: 12px; fill: currentColor; }
+  .lightbox-copy:hover { border-color: var(--accent2); color: var(--accent2); }
+  .lightbox-copy.copied { border-color: #4aff88; color: #4aff88; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 780px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px)  {
+    .grid { grid-template-columns: 1fr; }
+    .hero, main, .stats-bar, .instruction-banner { padding-left: 12px; padding-right: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    CINEMA
+  </a>
+  <span class="topbar-title"><span>Shots</span> &amp; Angles</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Référence visuelle</div>
+  <h1><span>Shots</span> &amp;<br>Angles</h1>
+  <p class="hero-desc">Cadres et angles de caméra pour vos vidéos IA. Filtrez par catégorie, copiez le prompt, placez vos images dans le dossier <strong>images/</strong>.</p>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="All">All · 22</button>
+    <button class="filter-btn" data-filter="Shots">Shots · 12</button>
+    <button class="filter-btn" data-filter="Angles">Angles · 10</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <span class="stat-count">Affichage : <span id="visible-count">22</span> / 22 shots &amp; angles</span>
+  <div class="stat-divider"></div>
+  <span class="stat-count">Images locales : <span id="img-count">0</span> chargées</span>
+  <button class="copy-all-btn" id="copy-all">⊕ Copier tous les prompts visibles</button>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="instruction-banner">
+  <div class="instruction-inner">
+    <div class="instruction-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 9h-2V7h2m0 10h-2v-6h2m-1-9A10 10 0 002 12a10 10 0 0010 10 10 10 0 0010-10A10 10 0 0012 2z"/></svg>
+    </div>
+    <div class="instruction-text">
+      <strong>Images locales :</strong> Dossier <code>images/</code> au même niveau que ce fichier HTML.
+      Nommez chaque image par son slug (ex : <code>images/extreme-wide-shot.png</code>). Formats supportés : <code>.png</code>, <code>.jpg</code>, <code>.webp</code>.
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+  <div class="lightbox-panel">
+    <div class="lightbox-img-wrap">
+      <img id="lightbox-img" src="" alt="">
+      <button class="lightbox-close" id="lightbox-close" title="Fermer">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-info">
+      <div class="lightbox-info-left">
+        <div class="lightbox-title" id="lightbox-title"></div>
+        <div class="lightbox-prompt" id="lightbox-prompt"></div>
+      </div>
+      <button class="lightbox-copy" id="lightbox-copy">
+        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        Copier prompt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<main>
+  <div class="grid" id="grid">
+    <div class="no-results" id="no-results">Aucun résultat pour ce filtre.</div>
+  </div>
+</main>
+
+<script>
+const shotsAngles = [
+  { id: 1,  slug: "extreme-wide-shot",    title: "Extreme Wide Shot",             tag: "Shots",
+    prompt: "Extreme wide shot, if you want the subject to seem smaller than the location." },
+  { id: 2,  slug: "long-shot",            title: "Long Shot / Wide Shot",         tag: "Shots",
+    prompt: "Long shot / wide shot, basically the same as the extreme wide shot but a bit closer." },
+  { id: 3,  slug: "full-shot",            title: "Full Shot",                     tag: "Shots",
+    prompt: "Full shot, focuses on the character in the frame." },
+  { id: 4,  slug: "medium-long-shot",     title: "Medium Long / Wide Shot",       tag: "Shots",
+    prompt: "Medium long / wide shot, shows the character from knees up, somewhere in between a full and a medium shot." },
+  { id: 5,  slug: "cowboy-shot",          title: "Cowboy Shot",                   tag: "Shots",
+    prompt: "Cowboy shot, shows the character from the waist or hip up." },
+  { id: 6,  slug: "medium-shot",          title: "Medium Shot",                   tag: "Shots",
+    prompt: "Medium shot, camera shot that reveals the character in more detail." },
+  { id: 7,  slug: "close-up",             title: "Close-Up",                      tag: "Shots",
+    prompt: "Close-up, to show a character's emotions and reactions." },
+  { id: 8,  slug: "medium-close-up",      title: "Medium Close-Up",               tag: "Shots",
+    prompt: "Medium close-up, shows the body language while capturing some emotions and facial expressions." },
+  { id: 9,  slug: "extreme-close-up",     title: "Extreme Close-Up",              tag: "Shots",
+    prompt: "Extreme close-up, the focal point is the smaller object, shown in great detail." },
+  { id: 10, slug: "shallow-focus",        title: "Shallow Focus",                 tag: "Shots",
+    prompt: "Shallow focus, uses shallow depth of field — the object is in focus and the background is blurry or out of focus." },
+  { id: 11, slug: "deep-focus",           title: "Deep Focus",                    tag: "Shots",
+    prompt: "Deep focus, everything in the scene is in focus." },
+  { id: 12, slug: "split-diopter",        title: "Split Diopter",                 tag: "Shots",
+    prompt: "Split diopter, allows you to have two simultaneous focal lengths." },
+  { id: 13, slug: "eye-level-shot",       title: "Eye Level Shot",                tag: "Angles",
+    prompt: "Eye level shot, the most common height. The subject is at eye level." },
+  { id: 14, slug: "low-angle-shot",       title: "Low Angle Shot",                tag: "Angles",
+    prompt: "Low angle shot, the camera looks up at the subject to emphasize the power dynamics between the characters." },
+  { id: 15, slug: "high-angle-shot",      title: "High Angle Shot",               tag: "Angles",
+    prompt: "High angle shot, the camera shoots from a high angle and points down at the subject creating a feeling of inferiority." },
+  { id: 16, slug: "hip-level-shot",       title: "Hip Level Shot",                tag: "Angles",
+    prompt: "Hip level shot, the camera is positioned at hip level." },
+  { id: 17, slug: "knee-level-shot",      title: "Knee Level Shot",               tag: "Angles",
+    prompt: "Knee level shot, the camera's height is at knee level." },
+  { id: 18, slug: "ground-level-shot",    title: "Ground Level Shot",             tag: "Angles",
+    prompt: "Ground level shot, the camera's height is on the ground level, capturing what is happening on the subject's ground." },
+  { id: 19, slug: "shoulder-level-shot",  title: "Shoulder-Level Shot",           tag: "Angles",
+    prompt: "Shoulder-level shot, the camera is at the height of the character's shoulders." },
+  { id: 20, slug: "dutch-angle-shot",     title: "Dutch Angle Shot",              tag: "Angles",
+    prompt: "Dutch angle shot, the camera is tilted to one side creating a sense of disorientation." },
+  { id: 21, slug: "birds-eye-view-shot",  title: "Bird's-Eye-View Shot",          tag: "Angles",
+    prompt: "Bird's-eye-view shot, taken from way up high. It looks down on the subject and shows the scenery around them." },
+  { id: 22, slug: "aerial-shot",          title: "Aerial Shot / Helicopter Shot", tag: "Angles",
+    prompt: "Aerial shot / helicopter shot, usually filmed from a helicopter or with a drone and shows a large part of the scenery." },
+];
+
+const tagConfig = {
+  Shots:  { cls: "tag-shots",  label: "SHOT"  },
+  Angles: { cls: "tag-angles", label: "ANGLE" },
+};
+
+const grid       = document.getElementById('grid');
+const noResults  = document.getElementById('no-results');
+const imgCountEl = document.getElementById('img-count');
+let imgLoadedCount = 0;
+
+shotsAngles.forEach((m, idx) => {
+  const tc       = tagConfig[m.tag];
+  const imgFile  = `images/${m.slug}.png`;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.tag = m.tag;
+  card.style.animationDelay = (idx * 0.025) + 's';
+
+  card.innerHTML = `
+    <div class="img-wrapper">
+      <img src="${imgFile}" alt="${m.title}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+           onload="imgLoadedCount++;imgCountEl.textContent=imgLoadedCount;">
+      <div class="img-placeholder" style="display:none">
+        <div class="ph-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        </div>
+        <div class="ph-text">Image introuvable</div>
+        <div class="ph-filename">${imgFile}</div>
+      </div>
+      <div class="img-tag ${tc.cls}">${tc.label}</div>
+      <div class="img-num">#${String(m.id).padStart(2,'0')}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${m.title}</div>
+      <div class="card-prompt">${m.prompt}</div>
+      <div class="card-footer">
+        <button class="copy-btn">
+          <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          Copier prompt
+        </button>
+      </div>
+    </div>`;
+
+  // Lightbox on image click
+  card.querySelector('.img-wrapper').addEventListener('click', () => {
+    openLightbox(imgFile, m.title, m.prompt);
+  });
+
+  // Copy prompt
+  card.querySelector('.copy-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    copyText(m.prompt, e.currentTarget);
+  });
+
+  grid.appendChild(card);
+});
+
+// Filter
+const filterBtns  = document.querySelectorAll('.filter-btn');
+const visibleCount = document.getElementById('visible-count');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    let vis = 0;
+    document.querySelectorAll('.card').forEach(c => {
+      const show = filter === 'All' || c.dataset.tag === filter;
+      c.classList.toggle('hidden', !show);
+      if (show) vis++;
+    });
+    visibleCount.textContent = vis;
+    noResults.style.display = vis === 0 ? 'block' : 'none';
+  });
+});
+
+// Copy all
+document.getElementById('copy-all').addEventListener('click', () => {
+  const f = document.querySelector('.filter-btn.active').dataset.filter;
+  const text = shotsAngles.filter(m => f === 'All' || m.tag === f)
+    .map((m,i) => `${i+1}. ${m.title}\n   ${m.prompt}`).join('\n\n');
+  const btn = document.getElementById('copy-all');
+  const orig = btn.textContent;
+  copyRaw(text);
+  btn.textContent = '✓ Copiés !';
+  setTimeout(() => { btn.textContent = orig; }, 2500);
+});
+
+// Helpers
+function copyRaw(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+
+function copyText(text, btn) {
+  copyRaw(text);
+  btn.textContent = '✓ Copié !';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+    btn.classList.remove('copied');
+  }, 2000);
+}
+
+// Lightbox (image)
+const lightbox       = document.getElementById('lightbox');
+const lightboxImg    = document.getElementById('lightbox-img');
+const lightboxTitle  = document.getElementById('lightbox-title');
+const lightboxPromptEl = document.getElementById('lightbox-prompt');
+const lightboxCopyBtn  = document.getElementById('lightbox-copy');
+let currentPrompt = '';
+
+function openLightbox(src, title, prompt) {
+  lightboxImg.src = src;
+  lightboxImg.alt = title;
+  lightboxTitle.textContent    = title;
+  lightboxPromptEl.textContent = prompt;
+  currentPrompt = prompt;
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lightboxCopyBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+  lightboxCopyBtn.classList.remove('copied');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { lightboxImg.src = ''; }, 300);
+}
+
+document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+document.getElementById('lightbox-backdrop').addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+lightboxCopyBtn.addEventListener('click', () => {
+  copyRaw(currentPrompt);
+  lightboxCopyBtn.innerHTML = '✓ Copié !';
+  lightboxCopyBtn.classList.add('copied');
+  setTimeout(() => {
+    lightboxCopyBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copier prompt`;
+    lightboxCopyBtn.classList.remove('copied');
+  }, 2000);
+});
+</script>
+</body>
+</html>

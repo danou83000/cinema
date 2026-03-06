@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appareils Photos — CINEMA & PHOTOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:#0a0c10; --bg-card:#141820; --bg-modal:#101318;
+    --accent:#e8c84a; --accent2:#ff9f4a;
+    --text-primary:#f2f4fa; --text-secondary:#9aa0b2; --text-muted:#5a6070;
+    --border:#1e2535; --border-hover:#2e3a55;
+    --tag-moyen:#e8c84a; --tag-argent:#ff9f4a; --tag-instant:#ff6b9d; --tag-hybrid:#4af0c8; --tag-action:#c87aff;
+    --card-radius:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg-deep);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+
+  /* TOPBAR */
+  .topbar{position:relative;z-index:10;padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+  .back-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+  .back-btn:hover{color:var(--accent)}
+  .back-btn svg{width:14px;height:14px;fill:currentColor}
+  .topbar-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:3px;color:var(--text-muted)}
+  .topbar-title span{color:var(--accent)}
+
+  /* HERO */
+  .hero{position:relative;z-index:5;padding:50px 32px 36px}
+  .hero-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .hero-label::before{content:'';display:inline-block;width:24px;height:2px;background:var(--accent2)}
+  .hero h1{font-family:'Bebas Neue',cursive;font-size:clamp(42px,6vw,80px);line-height:.95;letter-spacing:2px;margin-bottom:18px;background:linear-gradient(135deg,#f2f4fa 0%,#8a90a0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero h1 span{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-desc{color:var(--text-secondary);font-size:15px;max-width:620px;margin-bottom:32px;font-weight:300}
+
+  /* FILTERS */
+  .filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .filter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:30px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .2s}
+  .filter-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+  .filter-btn.active{color:#0a0c10;font-weight:600}
+  .filter-btn[data-filter="All"].active{background:var(--accent);border-color:var(--accent)}
+  .filter-btn[data-filter="MoyenFormat"].active{background:var(--tag-moyen);border-color:var(--tag-moyen)}
+  .filter-btn[data-filter="Argentique"].active{background:var(--tag-argent);border-color:var(--tag-argent)}
+  .filter-btn[data-filter="Instantane"].active{background:var(--tag-instant);border-color:var(--tag-instant)}
+  .filter-btn[data-filter="Hybride"].active{background:var(--tag-hybrid);border-color:var(--tag-hybrid)}
+  .filter-btn[data-filter="Action"].active{background:var(--tag-action);border-color:var(--tag-action)}
+
+  /* STATS */
+  .stats-bar{position:relative;z-index:5;padding:0 32px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .stat-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+  .stat-count span{color:var(--accent);font-weight:600}
+  .stat-divider{width:1px;height:16px;background:var(--border)}
+
+  /* INSTRUCTION */
+  .instruction-banner{position:relative;z-index:5;padding:0 32px 20px}
+  .instruction-inner{background:linear-gradient(135deg,rgba(232,200,74,.07) 0%,rgba(255,159,74,.04) 100%);border:1px solid rgba(232,200,74,.2);border-radius:10px;padding:14px 20px;display:flex;align-items:flex-start;gap:14px}
+  .instruction-icon{width:30px;height:30px;background:rgba(232,200,74,.15);border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+  .instruction-icon svg{width:15px;height:15px;fill:var(--accent)}
+  .instruction-text{font-size:13px;color:var(--text-secondary);line-height:1.6}
+  .instruction-text strong{color:var(--accent)}
+  .instruction-text code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(232,200,74,.1);padding:2px 6px;border-radius:4px;color:var(--accent)}
+
+  /* GRID */
+  main{position:relative;z-index:5;padding:0 32px 80px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  /* CARD */
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--card-radius);overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;display:flex;flex-direction:column;animation:fadeUp .4s ease both}
+  .card:hover{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .card.hidden{display:none}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* IMG WRAPPER */
+  .img-wrapper{position:relative;width:100%;aspect-ratio:4/3;background:#080a0e;overflow:hidden;flex-shrink:0;cursor:zoom-in}
+  .img-wrapper img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .img-wrapper:hover img{transform:scale(1.04)}
+  .img-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#0d1018 0%,#111520 100%)}
+  .ph-icon{width:48px;height:48px;border-radius:50%;border:2px dashed var(--border-hover);display:grid;place-items:center;color:var(--text-muted)}
+  .ph-icon svg{width:20px;height:20px;fill:currentColor}
+  .ph-text{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);text-align:center}
+  .ph-filename{font-size:9px;color:#2e3a4a;padding:4px 10px;border:1px solid #1a2535;border-radius:4px;font-family:'JetBrains Mono',monospace;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .img-tag{position:absolute;top:8px;left:8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;color:#0a0c10;font-weight:700;z-index:2;pointer-events:none}
+  .img-num{position:absolute;top:8px;right:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);z-index:2;pointer-events:none}
+  .tag-MoyenFormat{background:var(--tag-moyen)}
+  .tag-Argentique{background:var(--tag-argent)}
+  .tag-Instantane{background:var(--tag-instant)}
+  .tag-Hybride{background:var(--tag-hybrid);color:#0a0c10}
+  .tag-Action{background:var(--tag-action)}
+
+  /* CARD BODY */
+  .card-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+  .card-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:1px;color:var(--text-primary);line-height:1.1}
+  .card-summary{font-size:12px;color:var(--text-secondary);line-height:1.5;font-weight:300;flex:1}
+  .card-footer{margin-top:10px}
+
+  /* DETAIL BTN */
+  .detail-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+  .detail-btn svg{width:11px;height:11px;fill:currentColor}
+  .detail-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(232,200,74,.06)}
+
+  .no-results{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:13px;display:none}
+
+  /* IMAGE LIGHTBOX */
+  .lb-img,.lb-detail{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+  .lb-img.open,.lb-detail.open{opacity:1;pointer-events:all}
+  .lb-backdrop{position:absolute;inset:0;background:rgba(5,7,12,.93);backdrop-filter:blur(10px);cursor:pointer}
+
+  .lb-img-panel{position:relative;z-index:2;width:min(88vw,1100px);background:var(--bg-card);border:1px solid var(--border-hover);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.8);transform:scale(.94) translateY(16px);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .lb-img.open .lb-img-panel{transform:scale(1) translateY(0)}
+  .lb-img-wrap{position:relative;width:100%;aspect-ratio:4/3;background:#000;max-height:60vh}
+  .lb-img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+  .lb-img-info{padding:18px 24px 22px}
+  .lb-img-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;color:var(--text-primary);margin-bottom:4px}
+  .lb-img-prompt{font-size:13px;color:var(--text-secondary);font-weight:300;line-height:1.5}
+
+  .lb-close{position:absolute;top:14px;right:14px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(10,12,16,.8);border:1px solid rgba(255,255,255,.15);color:var(--text-primary);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .15s;backdrop-filter:blur(4px);flex-shrink:0}
+  .lb-close:hover{background:rgba(232,200,74,.2);border-color:var(--accent);transform:scale(1.08)}
+  .lb-close svg{width:16px;height:16px;fill:currentColor;pointer-events:none}
+
+  /* DETAIL MODAL */
+  .lb-detail-panel{position:relative;z-index:2;width:min(92vw,820px);max-height:88vh;background:var(--bg-modal);border:1px solid var(--border-hover);border-radius:16px;box-shadow:0 32px 80px rgba(0,0,0,.9);transform:scale(.94) translateY(16px);transition:transform .3s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;overflow:hidden}
+  .lb-detail.open .lb-detail-panel{transform:scale(1) translateY(0)}
+
+  .d-header{padding:22px 28px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-shrink:0;background:linear-gradient(135deg,rgba(232,200,74,.05) 0%,transparent 60%)}
+  .d-header-left{flex:1;min-width:0}
+  .d-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:5px}
+  .d-title{font-family:'Bebas Neue',cursive;font-size:30px;letter-spacing:1.5px;color:var(--text-primary);line-height:1;margin-bottom:8px}
+  .d-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;color:#0a0c10;font-weight:700}
+
+  .d-body{overflow-y:auto;padding:24px 28px 28px;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .d-body::-webkit-scrollbar{width:4px}
+  .d-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+  .d-section{margin-bottom:26px}
+  .d-section:last-child{margin-bottom:0}
+  .d-section-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .d-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .d-text{font-size:15px;color:#c8ccd8;line-height:1.8;font-weight:300}
+
+  /* Prompt block */
+  .d-prompt-block{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px}
+  .d-prompt-block:last-child{margin-bottom:0}
+  .d-prompt-lang{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a90a0;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+  .d-prompt-text{font-size:15px;color:#c0c5d4;line-height:1.7;font-style:italic}
+
+  .copy-p-btn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:#8a90a0;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .copy-p-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .copy-p-btn.copied{border-color:#4aff88;color:#4aff88}
+
+  /* Usages list */
+  .d-usages{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  .d-usages li{font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:#b0b6c8;background:rgba(255,255,255,.02);transition:border-color .15s}
+  .d-usages li:hover{border-color:var(--accent2);color:var(--accent2)}
+
+  /* RESPONSIVE */
+  @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.grid{grid-template-columns:1fr}.hero,main,.stats-bar,.instruction-banner{padding-left:12px;padding-right:12px}.d-header,.d-body{padding-left:18px;padding-right:18px}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    CINEMA & PHOTOS
+  </a>
+  <span class="topbar-title"><span>Appareils</span> Photos</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Référence visuelle</div>
+  <h1><span>Appareils</span><br>Photos</h1>
+  <p class="hero-desc">Guides des appareils photo pour générer des images IA avec la signature visuelle de chaque boîtier. Cliquez sur l'image pour l'agrandir, ou sur <strong>Détails</strong> pour la fiche complète avec prompt et usages.</p>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="All">All · 17</button>
+    <button class="filter-btn" data-filter="MoyenFormat">Moyen Format · 4</button>
+    <button class="filter-btn" data-filter="Argentique">Argentique · 5</button>
+    <button class="filter-btn" data-filter="Instantane">Instantané &amp; Lo-fi · 2</button>
+    <button class="filter-btn" data-filter="Hybride">Numérique Hybride · 4</button>
+    <button class="filter-btn" data-filter="Action">Action &amp; Embarqué · 2</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <span class="stat-count">Affichage&nbsp;: <span id="vis-count">17</span> / 17</span>
+  <div class="stat-divider"></div>
+  <span class="stat-count">Images locales&nbsp;: <span id="img-count">0</span> chargées</span>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="instruction-banner">
+  <div class="instruction-inner">
+    <div class="instruction-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+    <div class="instruction-text">Placez vos images dans le dossier <code>images/</code>. Nom exemple : <code>images/hasselblad-x1d.png</code></div>
+  </div>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div class="lb-img" id="lb-img">
+  <div class="lb-backdrop" id="lb-img-bd"></div>
+  <div class="lb-img-panel">
+    <div class="lb-img-wrap">
+      <img id="lb-img-el" src="" alt="">
+      <button class="lb-close" id="lb-img-close"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="lb-img-info">
+      <div class="lb-img-title" id="lb-img-title"></div>
+      <div class="lb-img-prompt" id="lb-img-prompt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="lb-detail" id="lb-detail">
+  <div class="lb-backdrop" id="lb-detail-bd"></div>
+  <div class="lb-detail-panel">
+    <div class="d-header">
+      <div class="d-header-left">
+        <div class="d-num" id="d-num"></div>
+        <div class="d-title" id="d-title"></div>
+        <span class="d-tag" id="d-tag"></span>
+      </div>
+      <button class="lb-close" id="lb-detail-close" style="position:relative;top:0;right:0;margin-top:2px"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="d-body">
+      <div class="d-section">
+        <div class="d-section-title">À propos de l'appareil</div>
+        <p class="d-text" id="d-about"></p>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">Usages typiques</div>
+        <ul class="d-usages" id="d-usages"></ul>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">Prompt IA — Exemple</div>
+        <div class="d-prompt-block">
+          <div class="d-prompt-lang"><span>🇫🇷 Français</span><button class="copy-p-btn" id="cp-fr">Copier</button></div>
+          <div class="d-prompt-text" id="d-pfr"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<main><div class="grid" id="grid"><div class="no-results" id="no-res">Aucun résultat.</div></div></main>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const cameras = [
+  {
+    id:1, slug:'hasselblad-x1d', tag:'MoyenFormat',
+    title:'Hasselblad X1D',
+    summary:'Moyen format 50 MP · rendu velouté, piqué exceptionnel, douceur lumineuse',
+    about:'Le Hasselblad X1D est un appareil numérique moyen format combinant un capteur 50 MP à un design compact. Il offre un rendu très fidèle, des textures détaillées et une douceur lumineuse, idéal pour la mode, le portrait ou la photographie de produit.',
+    usages:['Portraits éditoriaux','Photographie gastronomique','Art photographique de studio','Photographie de luxe et de détail'],
+    prompt:'Portrait serré d\'un chef cuisinier dans sa cuisine étoilée, lumière douce provenant d\'une fenêtre latérale, arrière-plan flou composé d\'étagères et d\'ustensiles métalliques. Image simulant un rendu photographique pris avec un Hasselblad X1D : format moyen, piqué exceptionnel, transitions lumineuses douces, profondeur réaliste, tons naturels équilibrés. Composition centrée, format carré 1:1, ambiance professionnelle.'
+  },
+  {
+    id:2, slug:'fujifilm-gfx100ii', tag:'MoyenFormat',
+    title:'Fujifilm GFX 100 II',
+    summary:'Moyen format 102 MP · ultra-réaliste, textures fines, compression spatiale',
+    about:'Moyen format numérique 102MP, le GFX 100 II est destiné à la photographie fine art, luxe et studio haute définition. Puissance ultime pour le détail.',
+    usages:['Portraits haut de gamme','Nature morte','Photo artistique','Publicité de luxe'],
+    prompt:'Musicien assis dans une salle de concert vide, lumière de projecteur, photo capturée avec un Fujifilm GFX 100 II : rendu ultra réaliste, textures fines, compression spatiale typique du moyen format. Format 4:5 vertical.'
+  },
+  {
+    id:3, slug:'pentax-67', tag:'MoyenFormat',
+    title:'Pentax 67',
+    summary:'Argentique moyen format 6×7 · grandiosité, profondeur immersive, détails riches',
+    about:'Boîtier moyen format emblématique, le Pentax 67 délivre des images spectaculaires, notamment en paysage et portrait contemplatif.',
+    usages:['Photographie de paysage','Portraits contemplatifs','Nature morte artistique'],
+    prompt:'Paysage de montagne enneigée à l\'aube, photo capturée avec un Pentax 67 : rendu grandiose, détails riches, profondeur immersive, format moyen 6x7. Format 4:5 vertical.'
+  },
+  {
+    id:4, slug:'leica-m-monochrom', tag:'MoyenFormat',
+    title:'Leica M Monochrom',
+    summary:'Monochrome exclusif · richesse tonale N&B, netteté extrême, sans bruit numérique',
+    about:'Le Leica M Monochrom est un appareil dédié exclusivement à la photographie noir et blanc, sans filtre Bayer, pour une richesse tonale et une netteté extrême.',
+    usages:['Photographie de rue','Portraits expressifs','Documentaire noir et blanc','Scènes intemporelles'],
+    prompt:'Vieil homme lisant un journal dans un café parisien, lumière rasante du matin, photo capturée avec un Leica M Monochrom : rendu exclusivement en noir et blanc, richesse des niveaux de gris, finesse extrême du détail, absence totale de bruit numérique, profondeur dramatique. Format 3:2 vertical, cadrage serré, ambiance contemplative.'
+  },
+  {
+    id:5, slug:'canon-ae1', tag:'Argentique',
+    title:'Canon AE-1',
+    summary:'Reflex argentique 35mm · rendu chaud, grain typique, contraste modéré',
+    about:'Le Canon AE-1 est un reflex argentique emblématique des années 70-80, réputé pour sa simplicité d\'utilisation et son rendu doux et naturel.',
+    usages:['Portraits de rue','Scènes quotidiennes','Photographie vintage','Lifestyle argentique'],
+    prompt:'Portrait en extérieur d\'une jeune femme assise sur un banc en automne, feuillage orangé, lumière diffuse, photo capturée avec un Canon AE-1 : rendu légèrement chaud, grain typique, contraste modéré. Format 3:2 vertical.'
+  },
+  {
+    id:6, slug:'nikon-fm2', tag:'Argentique',
+    title:'Nikon FM2',
+    summary:'Reflex mécanique manuel · rendu brut, contraste appuyé, grain marqué',
+    about:'Reflex mécanique totalement manuel, le Nikon FM2 est une légende pour les photographes puristes. Il délivre un rendu robuste et réaliste.',
+    usages:['Reportage social','Portrait documentaire','Photographie de terrain'],
+    prompt:'Vieil ouvrier posant devant un mur de briques rouges, lumière latérale forte du soleil, photo capturée avec un Nikon FM2 : rendu brut, contraste appuyé, grain marqué. Format 3:2 horizontal.'
+  },
+  {
+    id:7, slug:'contax-t2', tag:'Argentique',
+    title:'Contax T2',
+    summary:'Compact premium Carl Zeiss · rendu net et stylisé, teintes froides, flare artistique',
+    about:'Compact premium avec optique Carl Zeiss, le Contax T2 est prisé pour son rendu stylisé, net et son look élégant. Culte dans la mode et la photo de rue.',
+    usages:['Photographie de rue','Mode','Scènes nocturnes urbaines','Portraits stylisés'],
+    prompt:'Homme élégant en manteau long dans une rue de Tokyo, lumière des néons, photo capturée avec un Contax T2 : rendu net et stylisé, teintes froides, flare artistique. Format 3:2 horizontal.'
+  },
+  {
+    id:8, slug:'yashica-electro35', tag:'Argentique',
+    title:'Yashica Electro 35',
+    summary:'Télémétrique 35mm des années 60 · rendu chaud et rêveur, couleurs désaturées',
+    about:'Le Yashica Electro 35, lancé dans les années 60, est un appareil télémétrique à objectif fixe réputé pour son rendu chaleureux et nostalgique. Son objectif 45mm offre un rendu doux, idéal pour la photographie contemplative.',
+    usages:['Portraits vintage','Scènes du quotidien','Photographie contemplative','Ambiances rétro'],
+    prompt:'Jeune femme en robe vintage montant dans un tramway ancien, lumière douce d\'un matin nuageux, photo capturée avec un Yashica Electro 35 : teintes chaudes et douces, rendu légèrement rêveur, couleurs désaturées, mise au point centrale nette, bokeh subtil. Format 4:3 vertical, composition centrée.'
+  },
+  {
+    id:9, slug:'lomo-lca', tag:'Argentique',
+    title:'Lomo LC-A',
+    summary:'35mm Lomography · saturation éclatante, vignettage fort, esthétique brute lo-fi',
+    about:'Le Lomo LC-A est un appareil compact 35mm devenu culte grâce à la communauté Lomography. Il produit des images éclatantes, avec un fort vignettage et une esthétique brute et imprévisible.',
+    usages:['Photographie de rue spontanée','Scènes festives','Carnet de voyage alternatif','Effets artistiques lo-fi'],
+    prompt:'Enfant courant dans une rue colorée d\'Amérique du Sud, ballon rouge à la main, photo capturée avec un Lomo LC-A : rendu saturé, vignettage marqué, flou léger en périphérie, contraste intense, effet vintage caractéristique du mouvement Lomography. Cadrage spontané, format 3:2 horizontal, composition dynamique et légèrement décentrée.'
+  },
+  {
+    id:10, slug:'polaroid-sx70', tag:'Instantane',
+    title:'Polaroid SX-70',
+    summary:'Premier instantané à film intégral · bordure blanche, teinte magenta, onirique',
+    about:'Le Polaroid SX-70 fut le premier appareil instantané à film intégral. Il offre des images oniriques à teintes pastel avec un style immédiatement reconnaissable.',
+    usages:['Photographie souvenir','Portraits nostalgiques','Art lo-fi','Effets vintages immédiats'],
+    prompt:'Groupe d\'amis riant autour d\'un feu de camp en fin de journée, photo instantanée capturée avec un Polaroid SX-70 : bordure blanche visible, contraste élevé, teinte légèrement magenta, grain visible, flou artistique typique des optiques Polaroid. Format carré, composition centrée et instantané.'
+  },
+  {
+    id:11, slug:'appareil-jetable', tag:'Instantane',
+    title:'Appareil Jetable',
+    summary:'Kodak FunSaver · grain prononcé, surexposition, rendu brut et spontané',
+    about:'Les appareils photo jetables produisent des clichés imparfaits mais attachants. Populaires dans les années 90-2000, leur esthétique brute est aujourd\'hui recherchée pour son authenticité.',
+    usages:['Événements familiaux','Photographie nostalgique','Festivals','Ambiances brutes sans retouche'],
+    prompt:'Scène de goûter d\'anniversaire avec des enfants riant autour d\'un gâteau, lumière ambiante naturelle, photo capturée avec un appareil photo jetable Kodak FunSaver : grain prononcé, légère surexposition, faible netteté, rendu brut et spontané. Format 3:2 horizontal.'
+  },
+  {
+    id:12, slug:'fuji-x100v', tag:'Hybride',
+    title:'Fuji X100V',
+    summary:'Compact hybride APS-C · simulation film Classic Chrome, léger et précis',
+    about:'Le Fuji X100V est un compact hybride avec simulation de film. Léger, précis, son rendu est très apprécié des photographes de rue et auteurs visuels.',
+    usages:['Photographie de rue','Carnet de voyage','Journal visuel','Narration visuelle'],
+    prompt:'Jeune artiste dessinant dans un café, ambiance chaleureuse, lumière dorée, photo capturée avec un Fuji X100V : rendu réaliste, teinte douce Classic Chrome. Format 3:2 horizontal.'
+  },
+  {
+    id:13, slug:'sony-a7rv', tag:'Hybride',
+    title:'Sony A7R V',
+    summary:'Hybride plein format 61 MP · netteté chirurgicale, couleurs fidèles, haute résolution',
+    about:'Hybride plein format 61MP, le Sony A7R V offre un niveau de détail impressionnant, parfait pour studio, luxe ou art visuel de précision.',
+    usages:['Mode','Art studio','Photographie de mouvement','Photographie haute résolution'],
+    prompt:'Danseuse en mouvement dans un entrepôt industriel, lumière dirigée, photo capturée avec un Sony A7R V : netteté chirurgicale, couleurs fidèles, fond flou. Format 3:2 vertical.'
+  },
+  {
+    id:14, slug:'leica-q2', tag:'Hybride',
+    title:'Leica Q2',
+    summary:'Compact plein format 28mm · rendu cinématographique, bokeh fluide, minimaliste',
+    about:'Compact plein format 28mm de luxe, le Leica Q2 est prisé pour son rendu doux et immersif. Élégant, précis et minimaliste.',
+    usages:['Photographie urbaine élégante','Storytelling visuel','Portraits de rue'],
+    prompt:'Femme élégante traversant un passage piéton dans une capitale européenne, lumière naturelle de fin de journée, photo capturée avec un Leica Q2 : rendu cinématographique, détails fins, bokeh fluide. Format 3:2 vertical.'
+  },
+  {
+    id:15, slug:'ricoh-griii', tag:'Hybride',
+    title:'Ricoh GR III',
+    summary:'Compact APS-C discret · rendu brut, contraste marqué, léger et rapide',
+    about:'Compact APS-C discret et précis, le Ricoh GR III est l\'arme secrète des photographes de rue. Léger, rapide, sans distraction.',
+    usages:['Photographie de rue','Instantanés de voyage','Scènes urbaines intimes'],
+    prompt:'Homme lisant le journal sur les marches d\'un immeuble haussmannien, lumière du matin, photo capturée avec un Ricoh GR III : rendu brut, contraste marqué. Format 3:2 horizontal.'
+  },
+  {
+    id:16, slug:'drone-dji-mavic3', tag:'Action',
+    title:'Drone DJI Mavic 3',
+    summary:'Drone aérien · perspective plongeante, grande netteté, rendu cristallin 16:9',
+    about:'Les drones comme le DJI Mavic 3 offrent des angles spectaculaires et une très haute définition, idéals pour paysages et reportages aériens.',
+    usages:['Photographie de paysage','Sport extrême','Architecture','Reportages aériens'],
+    prompt:'Vue aérienne d\'un surfeur dans l\'océan turquoise, vagues texturées, lumière dorée de fin d\'après-midi, photo capturée avec un drone DJI Mavic 3 : grande netteté, perspective plongeante, rendu cristallin. Format 16:9 horizontal.'
+  },
+  {
+    id:17, slug:'gopro-hero11', tag:'Action',
+    title:'GoPro Hero 11',
+    summary:'Action cam embarquée · fish-eye immersif, saturation forte, énergie dynamique',
+    about:'Conçue pour les sports d\'action, la GoPro permet des prises de vue immersives et dynamiques avec un rendu énergique et embarqué.',
+    usages:['Sports d\'action','Vlogs immersifs','Vidéos embarquées','Photographie dynamique'],
+    prompt:'Jeune homme en combinaison de ski dévalant une pente, caméra fixée sur le casque, lumière dure de haute montagne, photo capturée avec une GoPro Hero 11 Black : angle large type fish-eye, saturation forte, rendu immersif. Format 16:9 horizontal.'
+  }
+];
+
+// ── TAG CONFIG ───────────────────────────────────────────────────────────────
+const tagConfig = {
+  MoyenFormat:{ label:'Moyen Format', bg:'#e8c84a', cls:'tag-MoyenFormat' },
+  Argentique: { label:'Argentique',   bg:'#ff9f4a', cls:'tag-Argentique' },
+  Instantane: { label:'Instantané',   bg:'#ff6b9d', cls:'tag-Instantane' },
+  Hybride:    { label:'Numérique',    bg:'#4af0c8', cls:'tag-Hybride' },
+  Action:     { label:'Action',       bg:'#c87aff', cls:'tag-Action' }
+};
+
+// ── BUILD GRID ───────────────────────────────────────────────────────────────
+const grid = document.getElementById('grid');
+const imgCntEl = document.getElementById('img-count');
+let imgLoaded = 0;
+const noRes = document.getElementById('no-res');
+
+cameras.forEach((c, idx) => {
+  const tc = tagConfig[c.tag];
+  const imgFile = `images/${c.slug}.png`;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.tag = c.tag;
+  card.style.animationDelay = (idx * 0.03) + 's';
+  card.innerHTML = `
+    <div class="img-wrapper">
+      <img src="${imgFile}" alt="${c.title}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+           onload="imgLoaded++;imgCntEl.textContent=imgLoaded;">
+      <div class="img-placeholder" style="display:none">
+        <div class="ph-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+        <div class="ph-text">Image introuvable</div>
+        <div class="ph-filename">${imgFile}</div>
+      </div>
+      <div class="img-tag ${tc.cls}">${tc.label}</div>
+      <div class="img-num">#${String(c.id).padStart(2,'0')}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${c.title}</div>
+      <div class="card-summary">${c.summary}</div>
+      <div class="card-footer">
+        <button class="detail-btn">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Détails
+        </button>
+      </div>
+    </div>`;
+
+  card.querySelector('.img-wrapper').addEventListener('click', () => openImg(imgFile, c.title, c.summary));
+  card.querySelector('.detail-btn').addEventListener('click', e => { e.stopPropagation(); openDetail(c, tc); });
+  grid.appendChild(card);
+});
+
+// ── FILTER ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    let v = 0;
+    document.querySelectorAll('.card').forEach(c => {
+      const show = f === 'All' || c.dataset.tag === f;
+      c.classList.toggle('hidden', !show);
+      if (show) v++;
+    });
+    document.getElementById('vis-count').textContent = v;
+    noRes.style.display = v === 0 ? 'block' : 'none';
+  });
+});
+
+// ── IMAGE LIGHTBOX ────────────────────────────────────────────────────────────
+const lbImg = document.getElementById('lb-img');
+function openImg(src, title, summary) {
+  document.getElementById('lb-img-el').src = src;
+  document.getElementById('lb-img-title').textContent = title;
+  document.getElementById('lb-img-prompt').textContent = summary;
+  lbImg.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeImg() { lbImg.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lb-img-close').addEventListener('click', closeImg);
+document.getElementById('lb-img-bd').addEventListener('click', closeImg);
+
+// ── DETAIL MODAL ──────────────────────────────────────────────────────────────
+const lbDet = document.getElementById('lb-detail');
+let curPfr = '';
+
+function openDetail(c, tc) {
+  document.getElementById('d-num').textContent = `Appareil #${String(c.id).padStart(2,'0')}`;
+  document.getElementById('d-title').textContent = c.title;
+  const dtag = document.getElementById('d-tag');
+  dtag.textContent = tc.label;
+  dtag.style.background = tc.bg;
+  dtag.style.color = '#0a0c10';
+
+  document.getElementById('d-about').textContent = c.about;
+
+  const usagesList = document.getElementById('d-usages');
+  usagesList.innerHTML = c.usages.map(u => `<li>${u}</li>`).join('');
+
+  curPfr = c.prompt;
+  document.getElementById('d-pfr').textContent = c.prompt;
+
+  document.getElementById('cp-fr').textContent = 'Copier';
+  document.getElementById('cp-fr').classList.remove('copied');
+
+  document.querySelector('.d-body').scrollTop = 0;
+  lbDet.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDet() { lbDet.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lb-detail-close').addEventListener('click', closeDet);
+document.getElementById('lb-detail-bd').addEventListener('click', closeDet);
+
+document.getElementById('cp-fr').addEventListener('click', function() {
+  try { navigator.clipboard.writeText(curPfr); } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = curPfr; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  this.textContent = '✓ Copié'; this.classList.add('copied');
+  setTimeout(() => { this.textContent = 'Copier'; this.classList.remove('copied'); }, 2000);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (lbDet.classList.contains('open')) closeDet();
+    else if (lbImg.classList.contains('open')) closeImg();
+  }
+});
+</script>
+</body>
+</html>

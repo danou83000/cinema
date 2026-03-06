@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Éclairages &amp; Couleurs — CINEMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:#0a0c10; --bg-card:#141820; --bg-modal:#101318;
+    --accent:#ff6b9d; --accent2:#ffcc44;
+    --text-primary:#f2f4fa; --text-secondary:#9aa0b2; --text-muted:#5a6070;
+    --border:#1e2535; --border-hover:#2e3a55;
+    --tag-color:#ff6b9d; --tag-stock:#ffcc44; --tag-light:#4af0c8; --tag-stylized:#c87aff;
+    --card-radius:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg-deep);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+
+  /* TOPBAR */
+  .topbar{position:relative;z-index:10;padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+  .back-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+  .back-btn:hover{color:var(--accent)}
+  .back-btn svg{width:14px;height:14px;fill:currentColor}
+  .topbar-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:3px;color:var(--text-muted)}
+  .topbar-title span{color:var(--accent)}
+
+  /* HERO */
+  .hero{position:relative;z-index:5;padding:50px 32px 36px}
+  .hero-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .hero-label::before{content:'';display:inline-block;width:24px;height:2px;background:var(--accent2)}
+  .hero h1{font-family:'Bebas Neue',cursive;font-size:clamp(42px,6vw,80px);line-height:.95;letter-spacing:2px;margin-bottom:18px;background:linear-gradient(135deg,#eef0f6 0%,#8a90a0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero h1 span{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-desc{color:var(--text-secondary);font-size:15px;max-width:620px;margin-bottom:32px;font-weight:300}
+
+  /* FILTERS */
+  .filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .filter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:30px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .2s}
+  .filter-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+  .filter-btn.active{color:#0a0c10;font-weight:600}
+  .filter-btn[data-filter="All"].active{background:var(--accent);border-color:var(--accent)}
+  .filter-btn[data-filter="Couleurs"].active{background:var(--tag-color);border-color:var(--tag-color)}
+  .filter-btn[data-filter="Stocks"].active{background:var(--tag-stock);border-color:var(--tag-stock)}
+  .filter-btn[data-filter="Lumiere"].active{background:var(--tag-light);border-color:var(--tag-light)}
+  .filter-btn[data-filter="Stylized"].active{background:var(--tag-stylized);border-color:var(--tag-stylized)}
+
+  /* STATS */
+  .stats-bar{position:relative;z-index:5;padding:0 32px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .stat-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+  .stat-count span{color:var(--accent);font-weight:600}
+  .stat-divider{width:1px;height:16px;background:var(--border)}
+
+  /* INSTRUCTION */
+  .instruction-banner{position:relative;z-index:5;padding:0 32px 20px}
+  .instruction-inner{background:linear-gradient(135deg,rgba(255,107,157,.07) 0%,rgba(255,204,68,.04) 100%);border:1px solid rgba(255,107,157,.2);border-radius:10px;padding:14px 20px;display:flex;align-items:flex-start;gap:14px}
+  .instruction-icon{width:30px;height:30px;background:rgba(255,107,157,.15);border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+  .instruction-icon svg{width:15px;height:15px;fill:var(--accent)}
+  .instruction-text{font-size:13px;color:var(--text-secondary);line-height:1.6}
+  .instruction-text strong{color:var(--accent)}
+  .instruction-text code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,107,157,.1);padding:2px 6px;border-radius:4px;color:var(--accent)}
+
+  /* GRID */
+  main{position:relative;z-index:5;padding:0 32px 80px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  /* CARD */
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--card-radius);overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;display:flex;flex-direction:column;animation:fadeUp .4s ease both}
+  .card:hover{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .card.hidden{display:none}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* IMG WRAPPER */
+  .img-wrapper{position:relative;width:100%;aspect-ratio:16/9;background:#080a0e;overflow:hidden;flex-shrink:0;cursor:zoom-in}
+  .img-wrapper img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .img-wrapper:hover img{transform:scale(1.04)}
+  .img-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#0d1018 0%,#111520 100%)}
+  .ph-icon{width:48px;height:48px;border-radius:50%;border:2px dashed var(--border-hover);display:grid;place-items:center;color:var(--text-muted)}
+  .ph-icon svg{width:20px;height:20px;fill:currentColor}
+  .ph-text{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);text-align:center}
+  .ph-filename{font-size:9px;color:#2e3a4a;padding:4px 10px;border:1px solid #1a2535;border-radius:4px;font-family:'JetBrains Mono',monospace;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .img-tag{position:absolute;top:8px;left:8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;color:#0a0c10;font-weight:700;z-index:2;pointer-events:none}
+  .img-num{position:absolute;top:8px;right:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);z-index:2;pointer-events:none}
+  .tag-Couleurs{background:var(--tag-color)}
+  .tag-Stocks{background:var(--tag-stock)}
+  .tag-Lumiere{background:var(--tag-light);color:#0a0c10}
+  .tag-Stylized{background:var(--tag-stylized)}
+
+  /* CARD BODY */
+  .card-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+  .card-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:1px;color:var(--text-primary);line-height:1.1}
+  .card-prompt{font-size:13px;color:var(--text-secondary);line-height:1.5;font-weight:300;flex:1}
+  .card-footer{margin-top:10px}
+
+  /* DETAIL BTN */
+  .detail-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+  .detail-btn svg{width:11px;height:11px;fill:currentColor}
+  .detail-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(255,107,157,.06)}
+
+  .no-results{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:13px;display:none}
+
+  /* ── IMAGE LIGHTBOX ── */
+  .lb-img,.lb-detail{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+  .lb-img.open,.lb-detail.open{opacity:1;pointer-events:all}
+  .lb-backdrop{position:absolute;inset:0;background:rgba(5,7,12,.93);backdrop-filter:blur(10px);cursor:pointer}
+
+  .lb-img-panel{position:relative;z-index:2;width:min(88vw,1100px);background:var(--bg-card);border:1px solid var(--border-hover);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.8);transform:scale(.94) translateY(16px);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .lb-img.open .lb-img-panel{transform:scale(1) translateY(0)}
+  .lb-img-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+  .lb-img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+  .lb-img-info{padding:18px 24px 22px}
+  .lb-img-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;color:var(--text-primary);margin-bottom:4px}
+  .lb-img-prompt{font-size:13px;color:var(--text-secondary);font-weight:300;line-height:1.5}
+
+  /* shared close btn */
+  .lb-close{position:absolute;top:14px;right:14px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(10,12,16,.8);border:1px solid rgba(255,255,255,.15);color:var(--text-primary);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .15s;backdrop-filter:blur(4px);flex-shrink:0}
+  .lb-close:hover{background:rgba(255,107,157,.2);border-color:var(--accent);transform:scale(1.08)}
+  .lb-close svg{width:16px;height:16px;fill:currentColor;pointer-events:none}
+
+  /* ── DETAIL MODAL ── */
+  .lb-detail-panel{position:relative;z-index:2;width:min(92vw,820px);max-height:88vh;background:var(--bg-modal);border:1px solid var(--border-hover);border-radius:16px;box-shadow:0 32px 80px rgba(0,0,0,.9);transform:scale(.94) translateY(16px);transition:transform .3s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;overflow:hidden}
+  .lb-detail.open .lb-detail-panel{transform:scale(1) translateY(0)}
+
+  /* detail header */
+  .d-header{padding:22px 28px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-shrink:0;background:linear-gradient(135deg,rgba(255,107,157,.05) 0%,transparent 60%)}
+  .d-header-left{flex:1;min-width:0}
+  .d-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:5px}
+  .d-title{font-family:'Bebas Neue',cursive;font-size:30px;letter-spacing:1.5px;color:var(--text-primary);line-height:1;margin-bottom:8px}
+  .d-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;color:#0a0c10;font-weight:700}
+
+  /* detail scrollable body */
+  .d-body{overflow-y:auto;padding:24px 28px 28px;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .d-body::-webkit-scrollbar{width:4px}
+  .d-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+  /* detail sections */
+  .d-section{margin-bottom:26px}
+  .d-section:last-child{margin-bottom:0}
+  .d-section-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .d-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .d-text{font-size:15px;color:#c8ccd8;line-height:1.8;font-weight:300}
+
+  .d-films{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  .d-films li{font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:#b0b6c8;background:rgba(255,255,255,.02);transition:border-color .15s}
+  .d-films li:hover{border-color:var(--accent2);color:var(--accent2)}
+
+  .d-prompt-block{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px}
+  .d-prompt-block:last-child{margin-bottom:0}
+  .d-prompt-lang{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a90a0;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+  .d-prompt-text{font-size:15px;color:#c0c5d4;line-height:1.7;font-style:italic}
+
+  .copy-p-btn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:#8a90a0;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .copy-p-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .copy-p-btn.copied{border-color:#4aff88;color:#4aff88}
+
+  .d-cases-block{font-size:14px;color:#b8bcc8;line-height:1.85;font-weight:300;padding:14px 18px 14px 18px;border-radius:8px;background:rgba(255,255,255,.02);border-left:2px solid var(--border)}
+  .d-cases-block li{margin-bottom:8px;padding-left:4px;list-style:none;position:relative}
+  .d-cases-block li::before{content:'›';position:absolute;left:-16px;color:var(--accent);opacity:.7}
+  /* legacy list style (unused but safe) */
+  .d-cases{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .d-cases li{font-size:14px;color:#b8bcc8;line-height:1.6;padding:10px 14px 10px 16px;border-radius:8px;background:rgba(255,255,255,.02);border-left:2px solid var(--border);transition:border-color .2s}
+  .d-cases li:hover{border-color:var(--accent)}
+
+  /* RESPONSIVE */
+  @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.grid{grid-template-columns:1fr}.hero,main,.stats-bar,.instruction-banner{padding-left:12px;padding-right:12px}.d-header,.d-body{padding-left:18px;padding-right:18px}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    CINEMA
+  </a>
+  <span class="topbar-title"><span>Éclairages</span> &amp; Couleurs</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Référence visuelle</div>
+  <h1><span>Éclairages</span><br>&amp; Couleurs</h1>
+  <p class="hero-desc">Styles d'éclairage, palettes de couleurs et textures pellicule. Cliquez sur une image pour l'agrandir, ou sur <strong>Détails</strong> pour la fiche complète avec prompts et films de référence.</p>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="All">All · 30</button>
+    <button class="filter-btn" data-filter="Couleurs">Couleurs &amp; Grading · 11</button>
+    <button class="filter-btn" data-filter="Stocks">Film Stocks · 4</button>
+    <button class="filter-btn" data-filter="Lumiere">Lumière &amp; Ambiance · 9</button>
+    <button class="filter-btn" data-filter="Stylized">Stylisé &amp; Abstrait · 6</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <span class="stat-count">Affichage&nbsp;: <span id="vis-count">30</span> / 30</span>
+  <div class="stat-divider"></div>
+  <span class="stat-count">Images locales&nbsp;: <span id="img-count">0</span> chargées</span>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="instruction-banner">
+  <div class="instruction-inner">
+    <div class="instruction-icon"><svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg></div>
+    <div class="instruction-text">Placez vos images dans le dossier <code>images/</code>. Nom : <code>images/teal-and-orange.png</code></div>
+  </div>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div class="lb-img" id="lb-img">
+  <div class="lb-backdrop" id="lb-img-bd"></div>
+  <div class="lb-img-panel">
+    <div class="lb-img-wrap">
+      <img id="lb-img-el" src="" alt="">
+      <button class="lb-close" id="lb-img-close"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="lb-img-info">
+      <div class="lb-img-title" id="lb-img-title"></div>
+      <div class="lb-img-prompt" id="lb-img-prompt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="lb-detail" id="lb-detail">
+  <div class="lb-backdrop" id="lb-detail-bd"></div>
+  <div class="lb-detail-panel">
+    <div class="d-header">
+      <div class="d-header-left">
+        <div class="d-num" id="d-num"></div>
+        <div class="d-title" id="d-title"></div>
+        <span class="d-tag" id="d-tag"></span>
+      </div>
+      <button class="lb-close" id="lb-detail-close" style="position:relative;top:0;right:0;margin-top:2px"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="d-body">
+      <div class="d-section">
+        <div class="d-section-title">Explication de l'effet</div>
+        <p class="d-text" id="d-expl"></p>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">Films de référence</div>
+        <ul class="d-films" id="d-films"></ul>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">Prompts</div>
+        <div class="d-prompt-block">
+          <div class="d-prompt-lang"><span>🇫🇷 Français</span><button class="copy-p-btn" id="cp-fr">Copier</button></div>
+          <div class="d-prompt-text" id="d-pfr"></div>
+        </div>
+        <div class="d-prompt-block">
+          <div class="d-prompt-lang"><span>🇬🇧 English</span><button class="copy-p-btn" id="cp-en">Copier</button></div>
+          <div class="d-prompt-text" id="d-pen"></div>
+        </div>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">Cas narratifs</div>
+        <ul class="d-cases-block" id="d-cases"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<main><div class="grid" id="grid"><div class="no-results" id="no-res">Aucun résultat.</div></div></main>
+
+<script>
+const D = {
+  "teal-and-orange":{
+    expl:`Le Teal & Orange est la technique de color grading la plus répandue dans le cinéma commercial contemporain. Elle repose sur un principe de complémentarité chromatique : les tons chauds (orange, cuivre, ambre) sont poussés sur les carnations et les zones lumineuses, tandis que les tons froids (bleu sarcelle, cyan) envahissent les ombres, les fonds et les environnements. L'image observée illustre parfaitement ce principe : un astronaute en combinaison blanche se détache dans un couloir dominé par des panneaux lumineux orange-ambre, pendant que les zones sombres virent au bleu profond. Le contraste entre ces deux couleurs complémentaires crée une image à la fois dynamique et immédiatement reconnaissable.`,
+    films:["Mad Max: Fury Road (2015)", "Transformers (2007)", "Blade Runner 2049 (2017)", "Thor: Ragnarok (2017)", "Interstellar (2014)"],
+    pfr:`Astronaute en combinaison spatiale blanche marchant dans un couloir futuriste sombre, éclairage Teal and Orange cinématographique — tons orangés chauds sur la peau et les panneaux lumineux, tons bleu sarcelle profond dans les ombres et l'environnement, contraste élevé, profondeur de champ réduite, blockbuster Hollywood, photoréaliste`,
+    pen:`Astronaut in white spacesuit walking through a dark futuristic corridor, cinematic Teal and Orange color grading — warm orange tones on skin and light panels, deep teal blue in shadows and environment, high contrast, shallow depth of field, Hollywood blockbuster aesthetic, photorealistic`,
+    cas:["Les scènes d'action ou de confrontation physique, pour accentuer l'énergie et la tension.", "Les environnements technologiques ou futuristes, pour valoriser les surfaces métalliques.", "Les séquences de révélation ou de montée en puissance d'un personnage héroïque.", "Les scènes nocturnes urbaines où l'on veut séparer clairement le personnage de son environnement.", "Les bandes-annonces et teasers, pour maximiser l'impact visuel immédiat."]
+  },
+  "nordic-noir":{
+    expl:`Le Nordic Noir est une esthétique visuelle née des séries policières scandinaves (Borgen, The Bridge, Wallander). Elle traduit visuellement un état psychologique de froid intérieur et d'isolement. La palette est radicalement désaturée, dominée par les gris ardoise, les bleus glacés et les verts sourds. L'éclairage est diffus, sans source directe marquée — typiquement un ciel couvert qui aplatit les volumes. L'image présentée montre un homme debout sur un rivage rocailleux battus par les vagues, vêtu d'un manteau gris et d'une écharpe. Chaque élément — la mer déchaînée, les rochers noirs, les nuages bas — renforce la sensation de solitude et d'adversité sourde.`,
+    films:["The Bridge / Broen (série, 2011)", "Let the Right One In (2008)", "The Girl with the Dragon Tattoo (2011, Fincher)", "Headhunters (2011)", "Border / Gräns (2018)"],
+    pfr:`Homme solitaire debout sur un rivage rocailleux balayé par les vagues, vent fort, ciel couvert et bas, mer grise agitée, esthétique Nordic Noir — palette désaturée de gris et bleus froids, lumière douce et diffuse sans ombre dure, atmosphère isolante et mélancolique, photoréaliste`,
+    pen:`Solitary man standing on a rocky windswept shoreline, strong wind, low overcast sky, choppy grey sea, Nordic Noir aesthetic — desaturated palette of greys and cold blues, soft diffused overcast lighting, isolating and melancholic atmosphere, photorealistic`,
+    cas:["Les enquêtes criminelles dans des environnements nordiques ou ruraux isolés.", "Les scènes de deuil où un personnage doit faire face à la perte seul.", "Les moments de doute moral d'un personnage qui n'a plus de repères.", "Les confrontations silencieuses entre deux personnages aux valeurs opposées.", "Les flash-forwards montrant un futur froid et incertain pour le protagoniste."]
+  },
+  "bleach-bypass":{
+    expl:`Le Bleach Bypass est une technique de développement argentique où l'étape de blanchiment est volontairement omise, conservant les cristaux d'argent sur la pellicule en plus des colorants. Le résultat est une image à très faible saturation, aux noirs denses et au contraste extrêmement élevé, avec une texture métallique argentée caractéristique. L'image analysée montre un soldat sous la pluie, casque en acier couvert de boue, tête baissée — une composition clairement inspirée du débarquement de Saving Private Ryan. L'effet retire toute couleur parasite, ne laissant que la brutalité des contrastes et la texture brute des matières.`,
+    films:["Saving Private Ryan (1998, Spielberg)", "Seven (1995, Fincher)", "Minority Report (2002, Spielberg)", "1984 (1984, Radford)", "Fury (2014, Ayer)"],
+    pfr:`Gros plan sur un soldat de la Seconde Guerre mondiale portant un casque en acier mouillé et couvert de boue, tête légèrement baissée, pluie battante, rendu cinématographique Bleach Bypass — très faible saturation, noirs denses, contraste extrême, texture argentée métallique, grain de film 35mm, photoréaliste`,
+    pen:`Close-up of a WWII soldier wearing a wet mud-covered steel helmet, head slightly bowed, heavy rain falling, cinematic Bleach Bypass look — very low saturation, crushed blacks, extreme contrast, metallic silver texture, 35mm film grain, photorealistic`,
+    cas:["Les scènes de combat ou de guerre pour accentuer la brutalité et déshumaniser l'image.", "Les séquences de choc traumatique ou de dissociation psychologique.", "Les environnements industriels ou carcéraux pour renforcer leur caractère oppressant.", "Les scènes de dépression profonde où le monde perd littéralement ses couleurs.", "Les flash-forwards montrant un futur sombre et sans espoir."]
+  },
+  "wes-anderson-800t":{
+    expl:`L'esthétique de Wes Anderson est l'une des plus reconnaissables du cinéma contemporain. Elle repose sur une symétrie axiale quasi mathématique, une palette de tons doux et pastel (roses poudré, verts d'eau, jaunes pâles, rouges bordeaux), et un éclairage à faible contraste — presque frontal — qui aplatit volontairement les volumes. L'image analysée montre l'intérieur d'un wagon de train parfaitement centré : banquettes en velours rouge bordeaux, boiseries acajou, sol en damier noir et blanc, valise jaune moutarde au centre exact du cadre. Tout concourt à un sentiment de monde miniature, contrôlé, légèrement irréel et profondément nostalgique.`,
+    films:["The Grand Budapest Hotel (2014)", "Moonrise Kingdom (2012)", "The Royal Tenenbaums (2001)", "Fantastic Mr. Fox (2009)", "The French Dispatch (2021)"],
+    pfr:`Intérieur d'un wagon de train ancien parfaitement symétrique, banquettes en velours rouge bordeaux, boiseries acajou, sol en damier noir et blanc, valise jaune moutarde au centre, lumières rondes au plafond, fenêtres de chaque côté, esthétique Wes Anderson — palette pastel, faible contraste, éclairage doux et plat, composition symétrique, photoréaliste`,
+    pen:`Perfectly symmetrical interior of a vintage train car, deep red velvet benches, mahogany wood paneling, black and white checkered floor, mustard yellow suitcase centered, round ceiling lights, windows on each side, Wes Anderson aesthetic — pastel palette, low contrast, soft flat lighting, symmetrical composition, photorealistic`,
+    cas:["Les séquences de voyage nostalgique ou d'exploration d'un monde clos et singulier.", "Les scènes d'enfance idéalisée ou de souvenir heureux légèrement idéalisé.", "Les moments de comédie absurde ou de décalage entre le ton grave du récit et son apparence soignée.", "L'introduction de personnages excentriques dans leur environnement de vie habituel.", "Les ellipses narratives rapides où l'on veut montrer plusieurs lieux différents en un rythme soutenu."]
+  },
+  "technicolor":{
+    expl:`Le Technicolor est un procédé photographique inventé dans les années 1910-1920 qui utilisait trois bandes de film sensibles à des primaires différentes (rouge, vert, bleu), produisant des couleurs d'une intensité et d'une saturation impossibles à obtenir autrement. L'image analysée montre une femme en robe rouge vif dansant dans un champ de fleurs aux rouges éclatants, jaunes intenses et violets profonds — les couleurs paraissent légèrement au-delà du réel, comme une peinture animée. Les tons de peau sont légèrement rosés, presque fardés, ce qui est caractéristique du procédé.`,
+    films:["The Wizard of Oz (1939)", "Singin' in the Rain (1952)", "Gone with the Wind (1939)", "An American in Paris (1951)", "Moulin Rouge (2001, hommage numérique)"],
+    pfr:`Femme en robe rouge vif dansant dans un champ de fleurs multicolores — rouges éclatants, jaunes vifs, violets profonds, teintes Technicolor vintage — saturation extrême et non naturelle, tons de peau légèrement rosés et fardés, lumière vive de mi-journée, ciel nuageux blanc, esthétique cinéma classique années 40-50, photoréaliste`,
+    pen:`Woman in a bright red dress dancing in a colorful flower field — vivid reds, bright yellows, deep purples, vintage Technicolor tones — extreme unnatural saturation, slightly rosy and painted skin tones, bright midday light, cloudy white sky, classic 1940s-50s cinema aesthetic, photorealistic`,
+    cas:["Les séquences de rêve ou d'imaginaire d'un personnage où la réalité est sublimée.", "Les flashbacks heureux à une époque idéalisée, perçus à travers le prisme de la nostalgie.", "Les numéros musicaux ou chorégraphiés qui appellent une rupture avec le réel.", "Les scènes de conte ou de fable où le monde diégétique est volontairement artificiel.", "Les publicités ou génériques de films voulant évoquer la magie du vieux Hollywood."]
+  },
+  "film-noir":{
+    expl:`Le Film Noir est né dans le cinéma américain des années 40-50, fortement influencé par l'expressionnisme allemand et sa technique du Chiaroscuro (clair-obscur). L'image est construite sur une opposition radicale entre des zones de lumière dure et blanche et des zones d'ombre profonde et opaque, sans graduation douce. L'image analysée montre une silhouette noire dans une ruelle pluvieuse sous un lampadaire dont la lumière perce comme un poing dans la nuit, avec des volutes de vapeur qui montent du sol. C'est une composition en noir et blanc à contraste extrême, presque graphique.`,
+    films:["Double Indemnity (1944, Wilder)", "The Maltese Falcon (1941, Huston)", "Chinatown (1974, Polanski)", "Sin City (2005, Rodriguez)", "L.A. Confidential (1997, Hanson)"],
+    pfr:`Silhouette d'un homme en imperméable debout dans une ruelle pavée sous une pluie battante, lampadaire solitaire au-dessus projetant un cône de lumière dure, vapeur montant du sol, noir et blanc, esthétique Film Noir — contraste extrême, ombres opaques et profondes, lumières dures et blanches, grain argentique, composition expressionniste`,
+    pen:`Silhouette of a man in a raincoat standing in a rain-drenched cobblestone alley, single streetlamp casting a hard cone of light above, steam rising from the ground, black and white, Film Noir aesthetic — extreme contrast, opaque deep shadows, harsh white highlights, silver grain, expressionist composition`,
+    cas:["Les scènes de filature, de surveillance ou de menace dans les rues la nuit.", "Les confrontations entre un détective et un suspect dans un espace clos mal éclairé.", "Les moments de trahison ou de révélation d'un secret longtemps caché.", "Les monologues intérieurs d'un personnage rongé par la culpabilité.", "Les dénouements tragiques dans des espaces urbains déserts et hostiles."]
+  },
+  "orthochromatic":{
+    expl:`L'esthétique orthochromatique est directement issue des limites techniques des premières pellicules photographiques et cinématographiques utilisées jusqu'aux années 1930. Ces pellicules étaient chimiquement insensibles aux tons rouges et orange, et hypersensibles aux bleus et violets. Le résultat est un rendu très caractéristique : les lèvres et les joues rouges apparaissent presque noires, les yeux bleus semblent délavés et transparents, les teintes de peau sont extrêmement pâles et crayeuses, et les ciels bleus brûlent en blanc pur. L'image a une qualité presque fantomatique, avec des contrastes inattendus et des zones de peau qui semblent lithographiées plutôt que photographiées. C'est l'esthétique du cinéma muet, de Nosferatu, de Metropolis — un monde en noir et blanc qui ne ressemble pas au nôtre.`,
+    films:["Nosferatu (1922, Murnau)", "Metropolis (1927, Lang)", "The Cabinet of Dr. Caligari (1920, Wiene)", "The Artist (2011, Hazanavicius — hommage moderne)", "Shadow of a Vampire (2000, Elias Merhige)"],
+    pfr:`Portrait d'une femme des années 1920 en robe sombre, éclairage orthochromatique vintage — teintes de peau extrêmement pâles et crayeuses presque translucides, lèvres très sombres presque noires, yeux délavés et clairs, cheveux noirs profonds, grain de pellicule argentique ancien très marqué, légère surexposition des zones lumineuses, qualité photographique des années 1920, noir et blanc contrasté de façon inattendue et non naturelle`,
+    pen:`Portrait of a 1920s woman in a dark dress, orthochromatic vintage look — extremely pale and chalky skin tones almost translucent, very dark near-black lips, washed-out pale eyes, deep black hair, heavy old silver grain, slight overexposure in bright areas, 1920s photographic quality, black and white with unexpected and unnatural contrast rendering`,
+    cas:["Les séquences se déroulant dans les années 1910-1930 voulant une authenticité visuelle totale avec l'époque.", "Les scènes d'horreur gothique ou expressionniste dont on veut accentuer le caractère fantomatique et irréel.", "Les flashbacks très lointains dans le temps, perçus comme des fragments de mémoire ancienne et fragile.", "Les scènes de cinéma muet reconstituées dans un récit contemporain, comme hommage ou mise en abyme.", "Les moments où un personnage plonge dans des archives ou des souvenirs d'une époque disparue."]
+  },
+  "panchromatic-classique":{
+    expl:`Lorsque les pellicules panchromatiques ont progressivement remplacé les orthochromatiques à partir des années 1930, elles ont permis pour la première fois une restitution équilibrée de toutes les couleurs en niveaux de gris. Le ciel bleu devenait un gris naturel, les lèvres rouges prenaient leur juste valeur tonale, les carnations s'adoucissaient. Le résultat est un noir et blanc beaucoup plus doux, gradué et nuancé que l'orthochromatique — les ombres restent profondes mais sans brutalité, les hautes lumières sont contrôlées, et les visages ont une qualité lumineuse et presque veloutée que les directeurs photo de l'époque comme Gregg Toland ou James Wong Howe ont portée à un niveau artistique exceptionnel. C'est le noir et blanc de Casablanca, de Citizen Kane, de All About Eve — élégant, maîtrisé, intemporel.`,
+    films:["Citizen Kane (1941, Welles — photo : Gregg Toland)", "Casablanca (1942, Curtiz)", "All About Eve (1950, Mankiewicz)", "Sunset Boulevard (1950, Wilder)", "Roma (2018, Cuarón — hommage numérique parfaitement maîtrisé)"],
+    pfr:`Femme élégante des années 1940 dans un salon luxueux, éclairage Panchromatic classique Hollywood — noir et blanc doux et gradué, carnations veloutées et lumineuses, ombres profondes mais sans brutalité, hautes lumières maîtrisées avec un léger glow sur les cheveux, grain argentique fin et régulier, qualité photographique de l'âge d'or hollywoodien années 1940, éclairage de studio trois points légèrement idéalisé`,
+    pen:`Elegant 1940s woman in a luxurious living room, classic Hollywood Panchromatic look — soft and graduated black and white, velvety and luminous skin tones, deep but not brutal shadows, controlled highlights with a slight hair glow, fine and regular silver grain, 1940s Hollywood golden age photographic quality, slightly idealized three-point studio lighting`,
+    cas:["Les récits biographiques se déroulant dans les années 1930-1950 voulant restituer l'élégance visuelle de l'époque sans la brutalité de l'orthochromatique.", "Les scènes de romance ou de glamour dans un cadre historique — bals, réceptions, rencontres dans des hôtels de luxe.", "Les hommages au cinéma classique hollywoodien où l'on veut citer une esthétique sans la singer.", "Les portraits de personnages dont on veut souligner la noblesse ou la dignité — le rendu velvouté flatte naturellement les visages.", "Les scènes de théâtre, de cinéma ou de music-hall reconstituées dans un film contemporain se déroulant dans cette période."]
+  },
+  "matrix-green":{
+    expl:`L'esthétique Matrix Green est directement issue de la trilogie des Wachowski (1999-2003), où la teinte verte omniprésente symbolisait visuellement la simulation informatique — le monde du code, de l'illusion numérique. L'image analysée montre un personnage encapuchonné devant plusieurs écrans diffusant du code, sous une lumière néon verte. Toute l'image est baignée d'un vert acide : les ombres sont vert foncé, les hautes lumières tirent vers le vert blanchâtre, et aucune autre couleur n'existe vraiment.`,
+    films:["The Matrix (1999)", "The Matrix Reloaded (2003)", "Hackers (1995)", "Tron: Legacy (2010, partiellement)", "Mr. Robot (série, 2015)"],
+    pfr:`Hacker encapuchonné dans l'obscurité devant plusieurs écrans affichant des lignes de code, lumière néon verte froide éclairant la scène, câbles et serveurs en arrière-plan, esthétique Matrix Green — teinte verte omniprésente sur toute l'image, ombres vert sombre, hautes lumières vert blanchâtre, atmosphère dystopique et froide, photoréaliste`,
+    pen:`Hooded hacker in darkness surrounded by multiple screens displaying lines of code, cold green neon light illuminating the scene, cables and servers in background, Matrix Green aesthetic — pervasive green tint across entire image, dark green shadows, whitish-green highlights, cold dystopian atmosphere, photorealistic`,
+    cas:["Les scènes se déroulant dans un espace numérique, une simulation ou un réseau informatique.", "Les séquences de hacking ou d'intrusion dans des systèmes informatiques.", "Les moments où un personnage réalise que sa réalité est artificielle ou manipulée.", "Les environnements de surveillance totalitaire où tout est contrôlé par des machines.", "Les scènes de corruption ou de contamination d'un système ou d'une société."]
+  },
+  "solarpunk":{
+    expl:`Le Solarpunk est une esthétique visuelle et un mouvement culturel qui imagine un futur harmonieux où la technologie et la nature coexistent. Contrairement au Cyberpunk (dystopique et sombre), le Solarpunk est délibérément optimiste : lumière solaire naturelle et franche, verdure luxuriante qui envahit les architectures, eau claire, tons blancs et verts dominants. L'image analysée montre des tours architecturales organiques couvertes de plantes et de jardins suspendus, baignées dans une lumière de fin de journée chaude et dorée, avec de l'eau au premier plan.`,
+    films:["Princess Mononoke (1997, Miyazaki)", "Nausicaä of the Valley of the Wind (1984)", "Avatar (2009, Cameron, partiellement)", "The Boy and the Heron (2023, Miyazaki)"],
+    pfr:`Cité futuriste aux tours organiques en bois courbé couvertes de plantes et jardins suspendus luxuriants, eau claire au premier plan avec des reflets dorés, lumière solaire chaude de fin de journée, ciel bleu clair, esthétique Solarpunk — palette verte et blanche lumineuse, optimisme écologique, harmonie entre technologie et nature, photoréaliste`,
+    pen:`Futuristic city with organic curved wooden towers covered in lush hanging gardens and plants, clear water in foreground with golden reflections, warm late-day sunlight, clear blue sky, Solarpunk aesthetic — bright green and white palette, ecological optimism, harmony between technology and nature, photorealistic`,
+    cas:["Les visions d'un futur positif dans un récit post-apocalyptique où l'humanité a su se reconstruire.", "Les scènes de découverte d'une utopie cachée, contrastant avec un monde extérieur dégradé.", "Les flashbacks vers un futur meilleur dans un film de science-fiction pessimiste.", "Les séquences de renaissance d'un territoire ou d'une communauté après un désastre.", "Les espaces de résistance créative contre un système autoritaire ou destructeur."]
+  },
+  "steampunk":{
+    expl:`Le Steampunk est une esthétique rétrofuturiste qui imagine une ère victorienne alternative où la vapeur et les mécanismes d'horlogerie auraient alimenté des technologies avancées. La palette est dominée par les tons chauds de la laiton, du cuivre, du cuir vieilli et de la brique. L'image analysée montre un inventeur ou mécanicien dans un atelier encombré de rouages, de tuyaux de cuivre, de jauges, de machines à vapeur. La lumière provient d'ampoules Edison à filaments, projetant une lumière ambrée et chaleureuse sur toutes les surfaces métalliques brillantes.`,
+    films:["The League of Extraordinary Gentlemen (2003)", "Hugo (2011, Scorsese)", "Sherlock Holmes (2009, Ritchie)", "Wild Wild West (1999)", "The Golden Compass (2007)"],
+    pfr:`Inventeur ou mécanicien dans un atelier victorien encombré de rouages en laiton, tuyaux en cuivre, jauges de pression, machines à vapeur, éclairage par ampoules Edison à filaments produisant une lumière ambrée chaude, vapeur s'échappant des conduites, esthétique Steampunk — palette chaude laiton-cuivre-cuir, textures métalliques brillantes et vieillies, photoréaliste`,
+    pen:`Inventor or mechanic in a cluttered Victorian workshop with brass gears, copper pipes, pressure gauges, steam engines, lit by Edison filament bulbs casting warm amber light, steam escaping from pipes, Steampunk aesthetic — warm brass-copper-leather palette, polished and aged metallic textures, photorealistic`,
+    cas:["Les scènes dans des laboratoires ou ateliers d'inventeurs excentriques dans une époque alternative.", "Les moments de découverte d'une technologie anachronique dans un contexte historique.", "Les environnements de voyage en machines extraordinaires (dirigeables, sous-marins victoriens).", "Les confrontations dans des usines ou mines industrielles de l'ère victorienne.", "Les espaces secrets de sociétés secrètes aux technologies avancées cachées au monde."]
+  },
+  "sepia":{
+    expl:`La teinte sépia est issue du procédé photographique du XIXe siècle utilisant de l'encre de seiche pour tonifier les tirages argentiques, leur donnant une couleur brun-rougeâtre caractéristique qui ralentissait aussi l'oxydation. En cinéma, la teinte sépia est utilisée pour évoquer le passé lointain, la nostalgie, et la chaleur d'une époque révolue. L'image analysée montre un cavalier traversant un canyon désertique à la lumière rasante du soleil, le tout baigné dans une monochromie brune chaleureuse sans aucune autre couleur.`,
+    films:["The Good, the Bad and the Ugly (1966, Leone, partiellement)", "Pleasantville (1998)", "The Assassination of Jesse James (2007)", "True Grit (2010, Coen Brothers)", "Tombstone (1993)"],
+    pfr:`Cavalier solitaire traversant un canyon désertique rocheux à la lumière rasante du soleil couchant, cactus en bordure, teinte sépia monochrome — monochromie brun-rougeâtre chaude sur toute l'image sans aucune autre couleur, atmosphère western nostalgique, ciel voilé, photoréaliste`,
+    pen:`Lone rider crossing a rocky desert canyon in raking sunset light, cacti on the edges, sepia monochrome tone — warm brown-reddish monochromatic tint across entire image with no other colors, nostalgic Western atmosphere, veiled sky, photorealistic`,
+    cas:["Les flashbacks se déroulant au XIXe siècle ou dans un passé lointain stylisé.", "Les séquences de western ou de récit de l'Ouest américain.", "Les moments de contemplation mélancolique d'un personnage âgé sur sa vie passée.", "Les archives ou documents anciens qui prennent vie à l'écran.", "Les rêves d'un personnage nostalgique qui idéalise une époque qu'il n'a pas connue."]
+  },
+  "night-vision-cctv":{
+    expl:`L'esthétique Night Vision ou CCTV simule le rendu visuel des caméras de surveillance ou des jumelles à vision nocturne. L'image est monochromatique — le plus souvent en vert phosphorescent ou en niveaux de gris — avec un grain numérique fort, une texture rugueuse, et un phénomène de bloom (auréole lumineuse) autour des sources de lumière. L'image analysée montre l'intérieur d'un supermarché vu par une caméra CCTV : un individu encapuchonné dans les allées, l'image baignée dans un vert monochrome, très granuleuse.`,
+    films:["Zero Dark Thirty (2012, Bigelow)", "Cloverfield (2008, Reeves)", "Paranormal Activity (2007)", "Chronicle (2012, Trank)", "Man on Fire (2004, Scott)"],
+    pfr:`Vue de caméra CCTV d'un supermarché la nuit, individu encapuchonné dans les allées entre les rayonnages, esthétique vision nocturne — monochromie vert phosphorescent, grain numérique fort, bloom autour des lumières fluorescentes, image basse résolution légèrement déformée, horodatage en coin d'image, atmosphère de surveillance froide`,
+    pen:`CCTV camera view of a supermarket at night, hooded individual in the aisles between shelves, night vision aesthetic — phosphorescent green monochrome, heavy digital grain, bloom around fluorescent lights, low resolution slightly distorted image, timestamp in corner, cold surveillance atmosphere`,
+    cas:["Les séquences de surveillance policière ou d'espionnage pour introduire une cible sans se dévoiler.", "Les found footage ou films de caméra embarquée pour ancrer l'action dans un réel brut.", "Les scènes d'infiltration militaire ou d'opérations spéciales nocturnes.", "Les moments de tension où un personnage est observé à son insu.", "Les scènes de braquage ou d'intrusion vues depuis les systèmes de sécurité du lieu."]
+  },
+  "kodachrome":{
+    expl:`Le Kodachrome est un film diapositif couleur commercialisé par Kodak de 1935 à 2010, réputé pour ses rouges profonds, ses jaunes dorés, ses tons de peau légèrement cuivrés, et un contraste marqué qui donnait aux images une qualité presque picturale. En cinéma, le look Kodachrome évoque immédiatement les années 50-70 et une nostalgie chaleureuse. L'image analysée montre une famille des années 60-70 faisant un pique-nique dans un parc, avec des couleurs saturées et chaudes qui font penser à une photographie de magazine de l'époque.`,
+    films:["Once Upon a Time in Hollywood (2019, Tarantino)", "Grease (1978)", "Stand By Me (1986, Reiner)", "Super 8 (2011, Abrams)", "American Graffiti (1973, Lucas)"],
+    pfr:`Famille américaine des années 1960-70 faisant un pique-nique dans un parc arboré, père en chemise à carreaux et lunettes de soleil, mère souriante, enfant blond, tons Kodachrome — saturation chaude et riche, rouges profonds, tons de peau cuivrés, contraste punchy, qualité diapositif analogique vintage, lumière de milieu d'après-midi`,
+    pen:`American family from the 1960s-70s having a picnic in a leafy park, father in plaid shirt and sunglasses, smiling mother, blonde child, Kodachrome tones — warm rich saturation, deep reds, coppery skin tones, punchy contrast, vintage analog slide quality, mid-afternoon light`,
+    cas:["Les flashbacks dans les années 50-70 vus comme des souvenirs heureux et idéalisés.", "Les scènes d'enfance racontées avec nostalgie par un narrateur adulte.", "Les séquences de road trip dans l'Amérique des décennies passées.", "Les albums photos ou films de famille qui prennent vie dans le récit.", "Les scènes contrastant un présent terne avec un passé coloré et vivant."]
+  },
+  "cinestill-800t":{
+    expl:`Le CineStill 800T est un film photographique dérivé du Kodak Vision 3 500T utilisé en cinéma, dont la couche anti-halo a été retirée pour permettre un traitement C-41 amateur. Cette suppression crée le phénomène d'halation — un halo rouge caractéristique qui auréole toutes les sources de lumière intense. La balance des blancs tungstène donne des tons bleutés à la lumière naturelle ou fluorescente. L'image analysée montre un homme en profil mélancolique devant une vitre sous la pluie, contemplant une rue nocturne illuminée par des enseignes néon dont les halos rouges se fondent dans l'image.`,
+    films:["Blade Runner (1982, Scott)", "Lost in Translation (2003, Coppola)", "Her (2013, Jonze)", "Drive (2011, Refn)", "Wong Kar-wai — In the Mood for Love (2000)"],
+    pfr:`Homme de profil mélancolique assis près d'une vitre pluvieuse la nuit, enseignes néon colorées en arrière-plan dont les lumières créent des halos rouges caractéristiques (halation), teinte bleutée tungstène, CineStill 800T look — balance des blancs froide et bleutée, halo rouge autour de chaque source lumineuse, grain analogique, atmosphère nocturne urbaine intime`,
+    pen:`Melancholic man in profile sitting by a rainy night window, colorful neon signs in background with characteristic red halation glow around each light source, tungsten bluish tint, CineStill 800T look — cold blue-shifted white balance, red halo around every light source, analog grain, intimate urban night atmosphere`,
+    cas:["Les scènes de solitude urbaine nocturne, un personnage seul dans la ville qui l'entoure.", "Les moments de mélancolie ou de contemplation dans un décor de bar, de café ou de rue.", "Les rencontres nocturnes intenses entre deux personnages dans un environnement néon.", "Les scènes de rupture ou d'attente émotionnelle sous la pluie ou dans la nuit.", "Les séquences évoquant une certaine esthétique des années 80-90 dans les grandes métropoles asiatiques ou américaines."]
+  },
+  "golden-hour":{
+    expl:`La Golden Hour désigne les 30 à 60 minutes qui suivent le lever du soleil ou précèdent son coucher, pendant lesquelles la lumière rasante du soleil bas produit une teinte dorée-orangée particulièrement chaude, des ombres longues et douces, et une atmosphère presque magique. L'image analysée montre un arbre isolé dans un champ à contre-jour, le soleil se couchant exactement derrière lui et projetant des rayons à travers ses branches, l'ensemble baigné dans une brume lumineuse dorée. C'est une image d'une beauté naturaliste immédiate.`,
+    films:["Days of Heaven (1978, Malick)", "The Revenant (2015, Iñárritu)", "Beasts of the Southern Wild (2012)", "Nomadland (2020, Zhao)", "Once Upon a Time in the West (1968, Leone)"],
+    pfr:`Arbre isolé dans un champ à contre-jour au coucher du soleil, soleil rasant se couchant exactement derrière l'arbre, rayons de lumière traversant les branches, longues ombres douces sur le sol, brume lumineuse dorée, esthétique Golden Hour — lumière dorée-orangée chaude et rasante, ciel gradient du doré à l'orangé, atmosphère magique et contemplative, photoréaliste`,
+    pen:`Lone tree in a field at backlit sunset, low raking sun setting exactly behind the tree, light rays filtering through branches, long soft shadows on the ground, golden luminous haze, Golden Hour aesthetic — warm golden-orange raking light, sky gradient from gold to orange, magical and contemplative atmosphere, photorealistic`,
+    cas:["Les scènes de réconciliation ou de paix après une longue période de conflit.", "Les épiphanies ou révélations intérieures d'un personnage au bord d'une décision importante.", "Les départs ou les adieux chargés d'émotion qui marquent une fin de chapitre.", "Les scènes pastorales ou contemplatives dans des récits en contact avec la nature.", "Les flashbacks heureux ou idéalisés évoquant un paradis perdu."]
+  },
+  "blue-hour":{
+    expl:`La Blue Hour est le moment qui suit immédiatement le coucher du soleil (ou précède son lever), quand la lumière directe a disparu mais que le ciel reste illuminé par diffusion atmosphérique, produisant une lumière froide, douce et profondément bleue-violette. Il n'y a plus d'ombres dures, tout est uniformément baigné dans cette couleur mélancolique. L'image analysée montre deux barques sur un lac immobile au crépuscule, le ciel et l'eau d'un même bleu profond, des silhouettes d'arbres sombres en arrière-plan, une légère brume.`,
+    films:["Revenant (2015, Iñárritu — certaines scènes)", "Brokeback Mountain (2005, Lee)", "Into the Wild (2007, Penn)", "Winter's Bone (2010, Granik)", "Fargo (série, saison 1)"],
+    pfr:`Deux barques en bois sur un lac calme et immobile au crépuscule, reflets parfaits dans l'eau, silhouettes d'arbres noirs en arrière-plan, légère brume à la surface de l'eau, esthétique Blue Hour — palette dominante bleu profond et violet, lumière froide et douce sans ombre dure, atmosphère mélancolique et contemplative, photoréaliste`,
+    pen:`Two wooden rowboats on a still calm lake at dusk, perfect reflections in the water, dark tree silhouettes in background, light mist over the water surface, Blue Hour aesthetic — dominant deep blue and purple palette, cold and soft light with no hard shadows, melancholic and contemplative atmosphere, photorealistic`,
+    cas:["Les scènes de deuil ou de recueillement dans un paysage naturel silencieux.", "Les moments de transition entre deux états d'un personnage — avant et après une décision.", "Les atmosphères nordiques ou rurales évoquant la solitude et l'immensité de la nature.", "Les scènes de rupture amoureuse ou de séparation vécues dans le calme et la résignation.", "Les fins ouvertes où le personnage contemple son avenir incertain dans un paysage figé."]
+  },
+  "cyberpunk-neon":{
+    expl:`L'esthétique Cyberpunk Neon tire son origine des romans de William Gibson et des films des années 80-90 (Blade Runner), mais a connu un renouveau massif dans les années 2010-2020. Elle associe des fonds urbains nocturnes sombres et saturés de pluie, des publicités lumineuses géantes, et un éclairage dominé par le rose, le magenta, le cyan et le violet. L'image analysée montre un motard en combinaison noire et casque réfléchissant fonçant à travers une rue urbaine sous la pluie, entouré d'immeubles couverts d'enseignes néon rose et cyan.`,
+    films:["Blade Runner (1982, Scott)", "Blade Runner 2049 (2017, Villeneuve)", "Ghost in the Shell (1995, Oshii)", "John Wick (2014 — partiellement)", "Alita: Battle Angel (2019)"],
+    pfr:`Motard en combinaison noire et casque réfléchissant avançant à travers une rue urbaine nocturne sous la pluie, immeubles couverts d'enseignes néon rose et cyan de chaque côté, reflets lumineux sur la chaussée mouillée, esthétique Cyberpunk Neon — fond sombre contrasté, lumières roses, violettes et cyan éclatantes, surfaces réfléchissantes, atmosphère dystopique futuriste, photoréaliste`,
+    pen:`Biker in black suit and reflective helmet advancing through a rain-soaked nighttime urban street, buildings covered in pink and cyan neon signs on both sides, light reflections on wet pavement, Cyberpunk Neon aesthetic — dark high-contrast background, vivid pink, purple and cyan lights, reflective surfaces, futuristic dystopian atmosphere, photorealistic`,
+    cas:["Les scènes de poursuite ou de fuite dans une mégapole futuriste et délabrée.", "Les moments de contact dans des espaces de marché noir ou de zones de non-droit urbaines.", "Les séquences dans des clubs ou espaces de divertissement débridés dans un monde dystopique.", "Les rencontres avec des personnages implantés ou augmentés technologiquement.", "Les scènes montrant le fossé entre les élites vivant dans la lumière et les masses dans l'ombre."]
+  },
+  "sodium-vapor":{
+    expl:`Les lampadaires à vapeur de sodium haute pression, très répandus dans les villes des années 70-90, émettent une lumière jaune-orangée monochrome d'une grande spécificité : ils écrasent toutes les autres teintes. Sous leur éclairage, les verts deviennent noirs, les bleus disparaissent, les peaux prennent une teinte maladive. L'image analysée montre une ruelle industrielle nocturne — bidons métalliques, vapeur, graffitis — baignée entièrement dans cette lumière orangée salie qui donne au décor un aspect hostile, sale et dangereux.`,
+    films:["Se7en (1995, Fincher)", "Requiem for a Dream (2000, Aronofsky)", "City of God (2002, Meirelles)", "The Wire (série, 2002-2008)", "Nightcrawler (2014, Gilroy)"],
+    pfr:`Ruelle industrielle nocturne sous des lampadaires à vapeur de sodium, bidons métalliques rouillés au sol, vapeur montant de la chaussée, graffitis sur les murs, lumière Sodium Vapor — teinte jaune-orangée monochrome sale et diffuse sur toute la scène, verts absents, atmosphère de zone industrielle dangereuse et abandonnée, photoréaliste`,
+    pen:`Nocturnal industrial alley under sodium vapor streetlights, rusty metal barrels on the ground, steam rising from the pavement, graffiti on walls, Sodium Vapor light — dirty monochromatic yellow-orange tint across entire scene, no greens, atmosphere of a dangerous abandoned industrial zone, photorealistic`,
+    cas:["Les scènes dans des quartiers défavorisés ou zones industrielles nocturnes.", "Les scènes de trafic, de deal ou d'activités illicites dans des espaces urbains dégradés.", "Les moments où un personnage traverse un environnement hostile et inconnu la nuit.", "Les scènes de surveillance policière dans des environnements urbains authentiques.", "Les séquences voulant ancrer le récit dans une réalité sociale crue et non esthétisée."]
+  },
+  "high-key":{
+    expl:`L'éclairage High Key est une technique cinématographique qui utilise un éclairage très intense, diffus et uniforme pour minimiser voire éliminer les ombres, produisant une image lumineuse, propre et sans aspérités. Les tons sont clairs, le contraste est faible, tout respire. C'est l'opposé exact du Chiaroscuro. L'image analysée montre une femme souriante dans une cuisine blanche, inondée de lumière naturelle par une grande fenêtre. L'ensemble dégage une impression immédiate de légèreté, de santé, d'optimisme.`,
+    films:["La La Land (2016, Chazelle — certaines scènes)", "Amélie (2001, Jeunet — intérieurs)", "Les publicités de produits de beauté ou alimentaires", "The Truman Show (1998, Weir)", "Mamma Mia! (2008)"],
+    pfr:`Femme souriante aux cheveux noirs dans une cuisine moderne blanche, lumière naturelle abondante entrant par une grande fenêtre, plantes vertes en arrière-plan, esthétique High Key — éclairage très lumineux et diffus, ombres quasi inexistantes, tons clairs et chauds, faible contraste, atmosphère optimiste et propre, photoréaliste`,
+    pen:`Smiling woman with black hair in a modern white kitchen, abundant natural light streaming through a large window, green plants in background, High Key aesthetic — very bright and diffused lighting, almost no shadows, light and warm tones, low contrast, clean and optimistic atmosphere, photorealistic`,
+    cas:["Les scènes de publicités, de vlogs ou de contenus de marque voulant inspirer confiance et bienveillance.", "Les environnements de comédie romantique légère pendant les moments heureux du récit.", "Les scènes d'hôpital ou de clinique voulant dédramatiser l'espace médical.", "Les séquences de réveil ou de nouveau départ d'un personnage après une période sombre.", "Les décors de l'utopie de surface, avant que le récit ne révèle sa face cachée (effet de contraste narratif)."]
+  },
+  "low-key":{
+    expl:`Le Low Key est l'opposé exact du High Key. C'est une technique d'éclairage qui utilise une source lumineuse unique, dure et directionnelle, laissant la majorité de l'image dans l'obscurité. Le ratio lumière/ombre est extrêmement déséquilibré : une petite zone est éclairée avec intensité, tout le reste est plongé dans le noir. Contrairement au Film Noir qui joue sur le contraste dramatique narratif, le Low Key est avant tout une technique de portrait et de mise en valeur du sujet par l'ombre elle-même. Le visage d'un personnage peut n'être éclairé qu'à moitié, l'autre moitié disparaissant dans le noir absolu. C'est l'éclairage de la tension intérieure, du secret et de la psychologie.`,
+    films:["The Godfather (1972, Coppola — Gordon Willis, surnommé \"le prince des ténèbres\")", "No Country for Old Men (2007, Coen Brothers)", "Black Swan (2010, Aronofsky)", "Prisoners (2013, Villeneuve)", "There Will Be Blood (2007, Anderson)"],
+    pfr:`Portrait rapproché d'un homme d'âge mûr au visage sévère, éclairage Low Key — une seule source lumineuse dure et latérale éclairant la moitié du visage, l'autre moitié disparaissant dans une obscurité profonde et totale, fond noir absolu, regard intense et direct, textures de peau très détaillées révélées par la lumière rasante, atmosphère de pouvoir et de menace silencieuse, photoréaliste`,
+    pen:`Close-up portrait of a stern middle-aged man, Low Key lighting — single hard lateral light source illuminating only half the face, the other half disappearing into total deep darkness, absolute black background, intense direct gaze, highly detailed skin textures revealed by raking light, atmosphere of power and silent menace, photorealistic`,
+    cas:["Les scènes d'interrogatoire ou de confrontation où un personnage détient un pouvoir psychologique sur un autre.", "Les introductions de personnages antagonistes dont on veut immédiatement signaler la complexité morale ou la dangerosité.", "Les moments de confession intime ou de révélation d'un secret longtemps gardé dans l'obscurité.", "Les scènes de doute moral où un personnage est littéralement \"à mi-chemin\" entre deux choix — la lumière et l'ombre symbolisant cette dualité.", "Les portraits de figures de pouvoir — parrains, tyrans, leaders charismatiques — dont l'autorité se lit dans l'ombre autant que dans la lumière."]
+  },
+  "candlelight-baroque":{
+    expl:`L'éclairage à la bougie est l'une des techniques les plus difficiles et les plus expressives du cinéma. Il crée une lumière orangée très chaude, douce et vacillante, qui ne touche que les zones proches et laisse tout le reste dans une obscurité profonde. C'est directement inspiré de la peinture baroque de Rembrandt, Caravage ou Vermeer. L'image analysée montre une femme d'époque éclairée uniquement par la flamme de bougies proches, son visage cuivré et chaud se détachant de l'obscurité en arrière-plan, dans une posture de lecture recueillie.`,
+    films:["Barry Lyndon (1975, Kubrick — tourné à la bougie)", "The Favourite (2018, Lanthimos)", "Girl with a Pearl Earring (2003, Webber)", "1917 (2019, Mendes — certaines scènes)", "Amadeus (1984, Forman)"],
+    pfr:`Femme d'époque médiévale ou Renaissance en robe brodée éclairée uniquement par des bougies proches, visage aux tons cuivrés et chauds se détachant de l'obscurité profonde, fond sombre et indéfini, esthétique Candlelight Baroque — lumière orange-cuivrée douce et localisée, tons de peau chauds et intenses, ombres profondes, inspiré de Rembrandt, photoréaliste`,
+    pen:`Medieval or Renaissance woman in embroidered dress lit only by nearby candles, warm copper-toned face emerging from deep darkness, dark and undefined background, Candlelight Baroque aesthetic — soft localized orange-copper light, warm and intense skin tones, deep shadows, inspired by Rembrandt, photorealistic`,
+    cas:["Les scènes de confession, de prière ou de rituel dans des contextes religieux ou médiévaux.", "Les moments d'intimité nocturne entre deux personnages dans un décor d'époque.", "Les scènes de complot ou de secret tramé dans des espaces clos et sombres.", "Les moments d'agonie, de maladie ou de mort dans des récits historiques.", "Les séquences de lecture, d'écriture ou de création artistique dans le recueillement."]
+  },
+  "silhouette":{
+    expl:`La silhouette est une technique d'éclairage où le sujet est placé devant une source de lumière intense (coucher de soleil, fenêtre, projecteur) et surexposée, de sorte que le sujet lui-même devient entièrement noir, sans aucun détail visible. Tout l'intérêt se déplace vers la forme du sujet et la richesse chromatique du fond. L'image analysée montre un personnage solitaire coiffé d'un chapeau de cowboy debout au sommet d'une colline face à un coucher de soleil dramatique aux rouges et orangés intenses.`,
+    films:["Lawrence of Arabia (1962, Lean)", "Apocalypse Now (1979, Coppola)", "Star Wars: A New Hope (1977, Lucas)", "The Lion King (1994)", "Braveheart (1995, Gibson)"],
+    pfr:`Personnage solitaire portant un chapeau de cowboy debout au sommet d'une colline rocheuse face à un coucher de soleil dramatique, silhouette — sujet entièrement noir sans aucun détail visible, ciel arrière aux rouges, orangés et carmins intenses, soleil à l'horizon, atmosphère épique et contemplative, photoréaliste`,
+    pen:`Lone figure wearing a cowboy hat standing atop a rocky hill facing a dramatic sunset, silhouette — subject entirely black with no visible detail, vivid red, orange and carmine sky behind, sun at the horizon, epic and contemplative atmosphere, photorealistic`,
+    cas:["Les moments d'épiphanie ou de décision cruciale d'un personnage au seuil d'un changement.", "Les introductions iconiques d'un personnage dont on veut préserver le mystère.", "Les fins de film évocatrices laissant le personnage face à l'horizon et à son avenir.", "Les scènes d'attente ou de veille dans un espace ouvert, entre espoir et incertitude.", "Les métaphores visuelles sur la solitude, la résistance ou la grandeur face à la nature."]
+  },
+  "bioluminescence":{
+    expl:`La bioluminescence est le phénomène naturel par lequel des organismes vivants (algues, champignons, méduses) produisent leur propre lumière par réaction chimique. Utilisée comme esthétique visuelle, elle crée un monde nocturne baigné dans des bleus, teals, violets et verts lumineux d'une beauté étrange et envoûtante — un neon organique, doux et pulsant. L'image analysée montre une forêt nocturne profonde peuplée de champignons géants lumineux, d'arbres aux lianes lumineuses, de plantes qui s'illuminent en bleu, violet et turquoise.`,
+    films:["Avatar (2009, Cameron)", "Life of Pi (2012, Lee — scène de la baleine)", "Annihilation (2018, Garland)", "Fantastic Planet (1973, Laloux)", "The Cell (2000, Singh)"],
+    pfr:`Forêt nocturne profonde et mystérieuse peuplée de champignons géants lumineux aux teintes bleues et turquoise, lianes et plantes lumineuses en violet et bleu-vert, arbres anciens aux racines imposantes, esthétique Bioluminescence — lumière organique douce et diffuse venant des plantes elles-mêmes, palette bleu nuit profond et teintes néon naturelles, atmosphère magique et onirique, photoréaliste`,
+    pen:`Deep mysterious night forest populated with giant glowing mushrooms in blue and turquoise tones, luminous vines and plants in purple and blue-green, ancient trees with imposing roots, Bioluminescence aesthetic — soft organic diffused light emanating from the plants themselves, deep night blue palette and natural neon tones, magical and dreamlike atmosphere, photorealistic`,
+    cas:["Les scènes de découverte d'un monde sous-marin ou souterrain inconnu et merveilleux.", "Les environnements extraterrestres dont on veut souligner la beauté non-humaine.", "Les séquences dans des forêts ou jungles présentant une dimension surnaturelle.", "Les moments où un personnage entre dans un état altéré de conscience et perçoit la lumière cachée du monde.", "Les espaces de guérison ou de renaissance spirituelle dans des récits de fantasy ou de science-fiction."]
+  },
+  "thermal-imaging":{
+    expl:`L'imagerie thermique est une technique de visualisation réelle utilisée par les caméras infrarouges militaires et scientifiques, qui traduit les niveaux de chaleur en couleurs : le blanc et le rouge pour les zones très chaudes, le jaune et l'orange pour les zones tièdes, et le bleu et le violet pour les zones froides. L'image analysée montre une vue aérienne d'une forêt nocturne vue à travers un viseur de type militaire, avec une source de chaleur intense (feu ou explosion) en rouge-blanc au centre, et les arbres froids en bleu profond. Des indicateurs de HUD et des chiffres de données encadrent la scène.`,
+    films:["Predator (1987, McTiernan)", "Zero Dark Thirty (2012, Bigelow)", "Eye in the Sky (2015, Hood)", "Black Hawk Down (2001, Scott)", "Act of Valor (2012)"],
+    pfr:`Vue aérienne nocturne d'une forêt à travers un viseur thermique militaire, feu ou explosion au centre de l'image en rouge-blanc intense, arbres froids en bleu profond et violet, interface HUD avec données et réticule de visée, esthétique thermal imaging — palette thermique complète du bleu froid au rouge chaud, affichage de capteurs et indicateurs, style caméra drone militaire`,
+    pen:`Night aerial view of a forest through a military thermal scope, fire or explosion at image center in intense red-white, cold trees in deep blue and purple, HUD interface with data readouts and targeting reticle, thermal imaging aesthetic — full thermal palette from cold blue to hot red, sensor readouts and indicators, military drone camera style`,
+    cas:["Les séquences de surveillance ou de traque dans des opérations militaires ou policières.", "Les scènes vues depuis le point de vue d'un prédateur non-humain ou d'une machine.", "Les moments où un personnage doit localiser une cible dans l'obscurité complète.", "Les scènes d'infiltration où la technologie remplace la vision humaine.", "Les scènes d'enquête scientifique sur des phénomènes invisibles à l'œil nu."]
+  },
+  "infrared-aerochrome":{
+    expl:`La photographie infrarouge (notamment avec le film Kodak Aerochrome) capture les longueurs d'onde infrarouges au lieu de la lumière visible, produisant un rendu surréaliste : la végétation (qui réfléchit fortement l'infrarouge) devient rose vif ou rouge cramoisi, les cieux bleus restent bleus ou deviennent sombres, et les surfaces minérales prennent des teintes inattendues. L'image analysée montre une vallée de montagne avec des forêts de conifères entièrement roses-cramoisies, des rochers gris-bleus, et un ciel bleu électrique — une palette qui semble appartenir à un autre monde.`,
+    films:["Control (2007, Corbijn — certaines séquences)", "Badlands (1973, Malick)", "Sans Soleil (1983, Marker)", "Films expérimentaux de Stan Brakhage"],
+    pfr:`Vallée de montagne avec des forêts de conifères entièrement roses et cramoisies, rochers gris-bleutés, ciel bleu électrique profond, infrared Aerochrome photography — végétation rose vif à cramoisie, minéraux en teintes froides, atmosphère surréaliste et onirique d'une autre planète, photoréaliste en rendu infrarouge`,
+    pen:`Mountain valley with conifer forests entirely pink and crimson, grey-blue rocks, deep electric blue sky, infrared Aerochrome photography — vivid pink to crimson vegetation, cold-toned minerals, surreal and dreamlike atmosphere of another planet, photorealistic in infrared rendering`,
+    cas:["Les séquences oniriques ou de vision altérée d'un personnage sous l'effet d'une substance ou d'un choc.", "Les univers extraterrestres ou fantastiques dont on veut souligner l'altérité radicale.", "Les flashbacks de souvenirs déformés par le temps ou la subjectivité.", "Les scènes de rituel ou de passage vers un autre état de conscience.", "Les environnements naturels auxquels on veut donner une dimension surnaturelle ou menaçante."]
+  },
+  "duotone":{
+    expl:`Le Duotone est une technique graphique où l'image est réduite à deux couleurs complémentaires ou contrastées qui remplacent respectivement les ombres et les hautes lumières. L'image observée montre une chanteuse soul devant une skyline de ville, l'ensemble étant composé uniquement de violet profond (ombres et silhouettes) et de jaune doré (hautes lumières et fond). C'est une esthétique très graphique, proche de l'affiche ou de la sérigraphie pop art.`,
+    films:["Moonrise Kingdom (2012, Anderson — affiche)", "Baby Driver (2017, Wright — affiche)", "Spider-Man: Into the Spider-Verse (2018 — séquences)", "Scott Pilgrim vs. the World (2010)", "Posters de films des années 60-70"],
+    pfr:`Chanteuse soul se produisant devant un micro vintage, skyline de ville en arrière-plan, esthétique Duotone — image composée uniquement de deux couleurs, violet profond pour les ombres et les silhouettes, jaune doré pour les hautes lumières et le fond, style graphique pop art, rendu quasi sérigraphique`,
+    pen:`Soul singer performing in front of a vintage microphone, city skyline in background, Duotone aesthetic — image composed of only two colors, deep purple for shadows and silhouettes, golden yellow for highlights and background, graphic pop art style, near screen-print rendering`,
+    cas:["Les séquences titres ou génériques d'ouverture voulant établir une identité visuelle forte.", "Les scènes de concert ou de performance artistique où la stylisation appuie l'énergie.", "Les flashbacks stylisés d'une mémoire partiellement reconstituée et imprécise.", "Les scènes de rêve ou de vision intérieure très stylisée et non naturaliste.", "Les moments de montage ou d'ellipse narrative rapide avec une forte identité graphique."]
+  },
+  "selective-color":{
+    expl:`La couleur sélective (popularisée par Sin City de Robert Rodriguez et Frank Miller en 2005) est une technique où l'image est entièrement en noir et blanc, à l'exception d'un seul élément qui conserve sa couleur d'origine. Cette couleur isolée attire immédiatement l'œil et prend une signification narrative ou émotionnelle forte. L'image analysée montre une femme sous la pluie dans une rue nocturne, tenant un parapluie rouge vif — seul élément coloré dans une image monochrome par ailleurs.`,
+    films:["Sin City (2005, Rodriguez)", "Schindler's List (1993, Spielberg — manteau rouge)", "Pleasantville (1998, Ross)", "The Wizard of Oz (1939 — transition vers la couleur)", "Rumble Fish (1983, Coppola — poissons rouges)"],
+    pfr:`Femme debout dans une rue nocturne sous la pluie battante, tenant un parapluie rouge vif, bâtiments et rue en arrière-plan, esthétique Selective Color Sin City — image entièrement en noir et blanc à l'exception du parapluie rouge qui garde sa couleur vive, contraste graphique extrême entre le monochrome et la couleur isolée, style cinématographique expressif`,
+    pen:`Woman standing in a rain-soaked nighttime street, holding a bright red umbrella, buildings and street in background, Selective Color Sin City aesthetic — image entirely in black and white except for the red umbrella which keeps its vivid color, extreme graphic contrast between monochrome and isolated color, expressive cinematic style`,
+    cas:["Les scènes où un objet ou un personnage spécifique doit être désigné comme unique, important ou sacré.", "Les séquences montrant un enfant ou un être innocent dans un monde déshumanisé — la couleur comme symbole de vie.", "Les moments de révélation où un détail crucial devient soudainement visible pour le spectateur.", "Les scènes d'amour ou de désir où la couleur désigne l'objet de fascination d'un personnage.", "Les narrations au bord du polar ou du noir où la couleur isole la seule chose qui compte encore."]
+  },
+  "cross-processed":{
+    expl:`Le cross-processing est une technique photographique analogique où le film est développé dans le mauvais bain chimique — par exemple, un film diapo (E-6) développé en C-41 pour négatif couleur. Le résultat est une distorsion des couleurs imprévisible et caractéristique : les ombres peuvent virer au vert ou au bleu-vert, les hautes lumières au jaune soufre ou au magenta, avec un contraste accentué et une saturation irrégulière. L'image analysée montre une jeune femme dans des décombres urbains, avec un ciel jaune soufre à gauche et des tons verts dans les zones d'ombre.`,
+    films:["Requiem for a Dream (2000, Aronofsky — certaines séquences)", "Slumdog Millionaire (2008, Boyle)", "Films de music video des années 90-2000", "Kids (1995, Clark)", "Spring Breakers (2012, Korine)"],
+    pfr:`Jeune femme en veste en jean debout dans des décombres d'un bâtiment abandonné, ciel nuageux en arrière-plan, esthétique Cross-Processed — décalage chimique des couleurs : ombres virant au vert, hautes lumières en jaune soufre ou magenta, contraste élevé, saturation irrégulière et non naturelle, style photographique lo-fi et radical`,
+    pen:`Young woman in denim jacket standing in the rubble of an abandoned building, cloudy sky in background, Cross-Processed aesthetic — chemical color shift: shadows turning green, highlights in sulfur yellow or magenta, high contrast, irregular and unnatural saturation, lo-fi and radical photographic style`,
+    cas:["Les scènes se déroulant dans des environnements de contre-culture, de fête ou d'underground urbain.", "Les séquences de prise de substances ou d'états altérés dans des récits sur l'addiction.", "Les music videos ou séquences musicales voulant un esthétique radical et non conventionnel.", "Les scènes de chaos ou de désintégration sociale dans un récit sur la jeunesse désœuvrée.", "Les moments de rupture stylistique volontaire pour signaler une transition narrative ou psychologique."]
+  },
+  "ultraviolet-blacklight":{
+    expl:`La lumière ultraviolette (UV ou blacklight) est invisible à l'œil nu mais excite certains pigments et matières qui deviennent alors fluorescents et lumineux. Sous éclairage UV, tout ce qui est blanc brille d'un blanc bleuté intense, les peintures UV s'illuminent en vert acide, orange ou rose vif, et le reste demeure dans un fond sombre violet-bleuté. L'image analysée montre un danseur dont le corps est entièrement couvert de peintures UV qui créent des motifs lumineux en vert, turquoise et orange sur un fond de scène violet-noir.`,
+    films:["Enter the Void (2009, Noé — certaines séquences)", "Electric Daisy Carnival (documentaires)", "The Neon Demon (2016, Refn)", "Bande à part meets Club scenes", "Spring Breakers (2012, Korine)"],
+    pfr:`Danseur aux bras écartés dont le corps est entièrement couvert de peintures body art lumineuses UV — motifs verts acides, turquoise et orange vif sur la peau, fond de scène sombre violet-bleuté profond, esthétique Ultraviolet Blacklight — peintures UV fluorescentes très lumineuses, fond sombre et désaturé, atmosphère de spectacle ou de club nocturne, photoréaliste`,
+    pen:`Dancer with arms spread wide whose body is entirely covered in glowing UV body paint — acid green, turquoise and bright orange patterns on skin, deep purple-blue dark stage background, Ultraviolet Blacklight aesthetic — very bright fluorescent UV paints, dark desaturated background, nightclub or show atmosphere, photorealistic`,
+    cas:["Les scènes dans des clubs, raves ou espaces de fête nocturne à l'esthétique psychédélique.", "Les performances artistiques ou circassiennes dans un espace scénique stylisé.", "Les univers de science-fiction ou de fantasy présentant une bioluminescence artificielle.", "Les scènes d'investigation forensique où la lumière UV révèle des traces invisibles.", "Les moments de transformation ou de révélation d'une identité cachée dans un récit de super-héros ou de thriller."]
+  }
+};
+// ── CARD DATA ──────────────────────────────────────────────────────────────────
+const cards = [
+  // COULEURS & GRADING
+  {id:1,  slug:"teal-and-orange",        title:"Teal and Orange",                         tag:"Couleurs", prompt:"Teal and orange color grading, blockbuster aesthetic, complementary colors, cyan and orange."},
+  {id:2,  slug:"nordic-noir",            title:"Nordic Noir",                              tag:"Couleurs", prompt:"Nordic noir aesthetic, desaturated blue and grey, overcast lighting, bleak atmosphere, muted tones."},
+  {id:3,  slug:"bleach-bypass",          title:"Bleach Bypass",                           tag:"Couleurs", prompt:"Bleach bypass, silver retention, desaturated, high contrast, gritty texture."},
+  {id:4,  slug:"wes-anderson-800t",      title:"Wes Anderson (Pastel Symmetry)",          tag:"Couleurs", prompt:"Pastel color palette, Wes Anderson style, 35mm film look, flat lighting, symmetrical composition."},
+  {id:5,  slug:"technicolor",            title:"Technicolor",                             tag:"Couleurs", prompt:"Technicolor, 3-strip color, hyper-saturated, vintage cinema, vibrant colors."},
+  {id:6,  slug:"film-noir",              title:"Film Noir / Chiaroscuro",                 tag:"Couleurs", prompt:"Film Noir, black and white, chiaroscuro, high contrast monochrome, dramatic shadows."},
+  {id:7,  slug:"orthochromatic",         title:"Orthochromatic Look",                     tag:"Couleurs", prompt:"Orthochromatic film emulation, chalky pale skin, dark lips, 1920s silent film aesthetic."},
+  {id:8,  slug:"panchromatic-classique", title:"Panchromatic Classique (Age d'Or)",       tag:"Couleurs", prompt:"Classic Hollywood panchromatic black and white, velvety skin tones, 1940s golden age."},
+  {id:9,  slug:"matrix-green",           title:"Matrix Green",                            tag:"Couleurs", prompt:"Green tint, fluorescent green, Matrix aesthetic, dystopian color palette."},
+  {id:10, slug:"solarpunk",              title:"Solarpunk (Eco-utopia)",                  tag:"Couleurs", prompt:"Solarpunk aesthetic, eco-futurism, lush greenery, bright sunlight, white and green palette."},
+  {id:11, slug:"steampunk",              title:"Steampunk",                               tag:"Couleurs", prompt:"Steampunk aesthetic, brass and copper, Victorian industrial, warm golden atmosphere, steam."},
+  // STOCKS
+  {id:12, slug:"sepia",                  title:"Sepia",                                   tag:"Stocks",   prompt:"Sepia color grading, monochromatic brown tint, Western movie aesthetic, warm atmosphere."},
+  {id:13, slug:"night-vision-cctv",      title:"Night Vision / CCTV",                     tag:"Stocks",   prompt:"CCTV footage, night vision, monochromatic green, security camera, grainy, surveillance feed."},
+  {id:14, slug:"kodachrome",             title:"Kodachrome (Nostalgie)",                  tag:"Stocks",   prompt:"Kodachrome film, vintage photography, warm tones, archival footage, analog look."},
+  {id:15, slug:"cinestill-800t",         title:"CineStill 800T (Night Glow)",             tag:"Stocks",   prompt:"CineStill 800T, red halation, tungsten balance, cinematic night, 35mm film."},
+  // LUMIERE & AMBIANCE
+  {id:16, slug:"golden-hour",            title:"Golden Hour",                             tag:"Lumiere",  prompt:"Golden Hour lighting, sun-drenched, warm orange haze, backlit, long shadows, cinematic landscape."},
+  {id:17, slug:"blue-hour",              title:"Blue Hour",                               tag:"Lumiere",  prompt:"Blue hour, twilight, cold tones, deep blue, melancholic lighting."},
+  {id:18, slug:"cyberpunk-neon",         title:"Cyberpunk (Neon)",                        tag:"Lumiere",  prompt:"Cyberpunk, neon lighting, magenta and cyan, reflective visor, neon noir, wet texture."},
+  {id:19, slug:"sodium-vapor",           title:"Sodium Vapor",                            tag:"Lumiere",  prompt:"Sodium vapor lighting, orange streetlights, urban night, industrial atmosphere."},
+  {id:20, slug:"high-key",              title:"High Key (Bright & Airy)",                tag:"Lumiere",  prompt:"High key lighting, bright and airy, low contrast, clean white tones, commercial aesthetic."},
+  {id:21, slug:"low-key",               title:"Low Key",                                 tag:"Lumiere",  prompt:"Single hard directional light source, majority of image in darkness, dramatic shadows."},
+  {id:22, slug:"candlelight-baroque",    title:"Candlelight / Baroque",                   tag:"Lumiere",  prompt:"Candlelight, fire lighting, warm glow, deep shadows, intimate atmosphere, chiaroscuro."},
+  {id:23, slug:"silhouette",             title:"Silhouette",                              tag:"Lumiere",  prompt:"Silhouette style, backlit subject, high contrast, pitch black foreground."},
+  {id:24, slug:"bioluminescence",        title:"Bioluminescence",                         tag:"Lumiere",  prompt:"Bioluminescence, glowing plants, deep blue night, magical atmosphere, organic neon."},
+  // STYLIZE
+  {id:25, slug:"thermal-imaging",        title:"Thermal Imaging (Vision Thermique)",      tag:"Stylized", prompt:"Thermal imaging, heat map, infrared camera, predator vision."},
+  {id:26, slug:"infrared-aerochrome",    title:"Infrared / Aerochrome",                   tag:"Stylized", prompt:"Infrared photography, Kodak Aerochrome, pink trees, surreal colors, false color."},
+  {id:27, slug:"duotone",               title:"Duotone",                                  tag:"Stylized", prompt:"Duotone, double color exposure, two-color palette, pop art graphic style."},
+  {id:28, slug:"selective-color",        title:"Selective Color / Sin City",              tag:"Stylized", prompt:"Selective color, monochrome with red splash, Sin City style, color isolation."},
+  {id:29, slug:"cross-processed",        title:"Cross-Processed",                         tag:"Stylized", prompt:"Cross-processed, color shift, unnatural colors, lomo style, chemical imbalance."},
+  {id:30, slug:"ultraviolet-blacklight", title:"Ultraviolet / Blacklight",                tag:"Stylized", prompt:"Ultraviolet light, blacklight, fluorescent glow, UV reactive, deep purple."},
+];
+
+const tagCfg = {
+  Couleurs:{cls:"tag-Couleurs",label:"GRADING", bg:"#ff6b9d"},
+  Stocks:  {cls:"tag-Stocks",  label:"STOCK",   bg:"#ffcc44"},
+  Lumiere: {cls:"tag-Lumiere", label:"LUMIÈRE", bg:"#4af0c8"},
+  Stylized:{cls:"tag-Stylized",label:"STYLISÉ", bg:"#c87aff"},
+};
+
+// ── BUILD GRID ──────────────────────────────────────────────────────────────────
+const grid = document.getElementById('grid');
+const noRes = document.getElementById('no-res');
+const imgCntEl = document.getElementById('img-count');
+let imgLoaded = 0;
+
+cards.forEach((m, idx) => {
+  const tc = tagCfg[m.tag];
+  const imgFile = `images/${m.slug}.png`;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.tag = m.tag;
+  card.style.animationDelay = (idx * 0.025) + 's';
+  card.innerHTML = `
+    <div class="img-wrapper">
+      <img src="${imgFile}" alt="${m.title}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+           onload="imgLoaded++;imgCntEl.textContent=imgLoaded;">
+      <div class="img-placeholder" style="display:none">
+        <div class="ph-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+        <div class="ph-text">Image introuvable</div>
+        <div class="ph-filename">${imgFile}</div>
+      </div>
+      <div class="img-tag ${tc.cls}">${tc.label}</div>
+      <div class="img-num">#${String(m.id).padStart(2,'0')}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${m.title}</div>
+      <div class="card-prompt">${m.prompt}</div>
+      <div class="card-footer">
+        <button class="detail-btn">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Détails
+        </button>
+      </div>
+    </div>`;
+
+  card.querySelector('.img-wrapper').addEventListener('click', () => openImg(imgFile, m.title, m.prompt));
+  card.querySelector('.detail-btn').addEventListener('click', e => { e.stopPropagation(); openDetail(m, tc); });
+  grid.appendChild(card);
+});
+
+// ── FILTER ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    let v = 0;
+    document.querySelectorAll('.card').forEach(c => {
+      const show = f === 'All' || c.dataset.tag === f;
+      c.classList.toggle('hidden', !show);
+      if (show) v++;
+    });
+    document.getElementById('vis-count').textContent = v;
+    noRes.style.display = v === 0 ? 'block' : 'none';
+  });
+});
+
+// ── IMAGE LIGHTBOX ──────────────────────────────────────────────────────────────
+const lbImg = document.getElementById('lb-img');
+function openImg(src, title, prompt) {
+  document.getElementById('lb-img-el').src = src;
+  document.getElementById('lb-img-title').textContent = title;
+  document.getElementById('lb-img-prompt').textContent = prompt;
+  lbImg.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeImg() { lbImg.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lb-img-close').addEventListener('click', closeImg);
+document.getElementById('lb-img-bd').addEventListener('click', closeImg);
+
+// ── DETAIL MODAL ────────────────────────────────────────────────────────────────
+const lbDet = document.getElementById('lb-detail');
+let curPfr = '', curPen = '';
+
+function openDetail(m, tc) {
+  const det = D[m.slug];
+  if (!det) return;
+
+  document.getElementById('d-num').textContent   = `Technique #${String(m.id).padStart(2,'0')}`;
+  document.getElementById('d-title').textContent = m.title;
+  const dtag = document.getElementById('d-tag');
+  dtag.textContent = tc.label;
+  dtag.style.background = tc.bg;
+  dtag.style.color = (m.tag === 'Lumiere' || m.tag === 'Stocks') ? '#0a0c10' : '#0a0c10';
+
+  document.getElementById('d-expl').textContent = det.expl;
+
+  const filmsList = document.getElementById('d-films');
+  filmsList.innerHTML = det.films.map(f => `<li>${f}</li>`).join('');
+
+  curPfr = det.pfr;
+  curPen = det.pen;
+  document.getElementById('d-pfr').textContent = det.pfr;
+  document.getElementById('d-pen').textContent = det.pen;
+
+  const casesList = document.getElementById('d-cases');
+  casesList.innerHTML = det.cas.map(c => `<li>${c}</li>`).join('');
+
+  document.querySelector('.d-body').scrollTop = 0;
+  document.getElementById('cp-fr').textContent = 'Copier';
+  document.getElementById('cp-fr').classList.remove('copied');
+  document.getElementById('cp-en').textContent = 'Copier';
+  document.getElementById('cp-en').classList.remove('copied');
+
+  lbDet.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDet() { lbDet.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lb-detail-close').addEventListener('click', closeDet);
+document.getElementById('lb-detail-bd').addEventListener('click', closeDet);
+
+function copyText(t, btn, lab) {
+  try { navigator.clipboard.writeText(t); } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  btn.textContent = `✓ ${lab}`; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2000);
+}
+
+document.getElementById('cp-fr').addEventListener('click', function() { copyText(curPfr, this, 'Copié'); });
+document.getElementById('cp-en').addEventListener('click', function() { copyText(curPen, this, 'Copied'); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (lbDet.classList.contains('open')) closeDet();
+    else if (lbImg.classList.contains('open')) closeImg();
+  }
+});
+</script>
+</body>
+</html>

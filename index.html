@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CINEMA — AI Video Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c10; --border: #1e2535; --text: #f2f4fa; --muted: #5a6070;
+    --c1: #e8c84a; --c2: #ff9f4a; --c3: #ff6b9d;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 56px; padding: 40px;
+    position: relative; overflow: hidden;
+  }
+  body::before {
+    content: ''; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -60%);
+    width: 700px; height: 400px;
+    background: radial-gradient(ellipse, rgba(232,200,74,.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(56px, 12vw, 140px);
+    letter-spacing: 14px; line-height: 1.05;
+    background: linear-gradient(160deg, #eef0f6 20%, #2e3a55 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; text-align: center; user-select: none;
+  }
+  h1 .et {
+    font-size: clamp(28px, 5vw, 60px);
+    letter-spacing: 10px;
+    display: block;
+  }
+  .nav {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; width: 100%; max-width: 900px;
+  }
+  .nav a {
+    text-decoration: none; padding: 28px 24px 24px;
+    border: 1px solid var(--border); border-radius: 14px;
+    background: #0e1119;
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 14px;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .nav a::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--clr); opacity: 0; transition: opacity .25s;
+  }
+  .nav a:hover { transform: translateY(-4px); border-color: var(--clr); box-shadow: 0 16px 48px rgba(0,0,0,.5), 0 0 0 1px var(--clr) inset; }
+  .nav a:hover::before { opacity: 1; }
+  .nav-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: color-mix(in srgb, var(--clr) 15%, transparent);
+    display: grid; place-items: center; flex-shrink: 0;
+    transition: background .25s;
+  }
+  .nav a:hover .nav-icon { background: color-mix(in srgb, var(--clr) 25%, transparent); }
+  .nav-icon svg { width: 24px; height: 24px; fill: var(--clr); }
+  .nav-label {
+    font-family: 'Bebas Neue', cursive; font-size: 20px;
+    letter-spacing: 2px; color: var(--text); transition: color .25s; line-height: 1.1;
+  }
+  .nav a:hover .nav-label { color: var(--clr); }
+  .nav-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); margin-top: auto; }
+  .nav a:nth-child(1) { --clr: var(--c1); }
+  .nav a:nth-child(2) { --clr: var(--c2); }
+  .nav a:nth-child(3) { --clr: var(--c3); }
+  .nav a:nth-child(4) { --clr: #4af0c8; }
+  .sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; text-align: center; }
+  @media (max-width: 680px) { .nav { grid-template-columns: 1fr; max-width: 400px; } }
+</style>
+</head>
+<body>
+  <h1>CINEMA<span class="et">et</span>PHOTOS</h1>
+  <nav class="nav">
+    <a href="camera-movements.html">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98zm-2-.79V18H4V6h12v3.69z"/></svg>
+      </div>
+      <div class="nav-label">Mouvements<br>de Caméra</div>
+      <div class="nav-count">44 prompts · videos/</div>
+    </a>
+    <a href="shots-angles.html">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14z"/></svg>
+      </div>
+      <div class="nav-label">Shots<br>&amp; Angles</div>
+      <div class="nav-count">22 prompts · images/</div>
+    </a>
+    <a href="eclairages.html">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M7 2v2h1v5.27L4.54 14H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1h-.54L16 9.27V4h1V2H7zm5 16c-.83 0-1.5-.67-1.5-1.5S11.17 15 12 15s1.5.67 1.5 1.5S12.83 18 12 18zm3-14v5.73l2.17 4H14v-2h-4v2H6.83L9 9.73V4h6z"/></svg>
+      </div>
+      <div class="nav-label">Éclairages<br>&amp; Couleurs</div>
+      <div class="nav-count">27 prompts · images/</div>
+    </a>
+    <a href="appareils-photos.html">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9m3 6a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4z"/></svg>
+      </div>
+      <div class="nav-label">Appareils<br>Photos</div>
+      <div class="nav-count">17 appareils · images/</div>
+    </a>
+  </nav>
+  <p class="sub">AI Video Reference — Prompts &amp; Media Library</p>
+</body>
+</html>
